@@ -1,0 +1,16 @@
+<?php
+
+namespace {{namespace}};
+
+class {{class}}
+{
+    /**
+     * Creates a new instance of the class.
+     * 
+     * @return void
+     */
+    public function __construct()
+    {
+        //
+    }
+}

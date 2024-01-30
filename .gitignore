@@ -1,0 +1,10 @@
+# Auto generated files 
+**/.DS_Store
+
+# Storage files
+storage/**
+!storage/.gitignore
+
+# Tests
+tests/**
+!tests/.gitignore
