@@ -1,6 +1,9 @@
 # Auto generated files 
 **/.DS_Store
 
+# Configuration files
+index.php
+
 # Storage files
 storage/**
 !storage/.gitignore
