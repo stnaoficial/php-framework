@@ -77,8 +77,7 @@ final class Autoloader extends PrimitiveObject
     {
         if (is_null(self::$instance)) {
             throw new UnexpectedValueException(sprintf(
-                'The %s instance needs to be properly initialized first.',
-                Autoloader::class
+                'The %s instance needs to be properly initialized first.', Autoloader::class
             ));
         }
 
@@ -276,7 +275,14 @@ final class Autoloader extends PrimitiveObject
             $this->build();
         }
 
-        $options = $cache->memorize($this->getComputedOptions());
+        // Get the computed options from the cache memoization.
+        // It considers the already computed options from the cache if they exist,
+        // otherwise it computes the options again and stores them in the cache.
+        // We are also typing the options for a better usage.
+        /** @var array{require:array<string>, resolve:array<string, string>} */
+        $options = $cache->memorize(function() {
+            return $this->getComputedOptions();
+        });
 
         $this->setComputedOptions($options);
 

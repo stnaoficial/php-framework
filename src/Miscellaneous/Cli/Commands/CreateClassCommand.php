@@ -3,12 +3,12 @@
 namespace Miscellaneous\Cli\Commands;
 
 use Oraculum\Cli\Abstracts\Command;
+use Oraculum\Cli\Components\Table;
 use Oraculum\Cli\Console;
 use Oraculum\Cli\Request;
-use Oraculum\FileSystem\File;
-use Oraculum\FileSystem\LocalFile;
-use Oraculum\Stub\Stub;
+use Oraculum\FileSystem\StubFile;
 use Oraculum\Support\Path as PathSupport;
+use Oraculum\Support\Performance;
 
 final class CreateClassCommand extends Command
 {
@@ -24,7 +24,7 @@ final class CreateClassCommand extends Command
      * 
      * @var string|null
      */
-    protected $description = "Create a new class with the especified [--namespace], [--class=<name>,...>] and [--destination].";
+    protected $description = "Create a new class with the especified [--namespace], [--class=<name>,...>] and [--dirname].";
 
     /**
      * Handle the command.
@@ -33,16 +33,19 @@ final class CreateClassCommand extends Command
      */
     protected function handle()
     {
-        $console = new Console;
+        Performance::start();
 
-        $file = new File(__SOURCE_DIR__ . "/Miscellaneous/resources/stubs/class.stub");
-        $stub = Stub::fromFile($file);
+        $stub = new StubFile(__SOURCE_DIR__ . "/Miscellaneous/resources/stubs/class.stub");
 
         $request = Request::fromCapture();
 
-        $namespace   = $request->hasOption("namespace")?   $request->getOption("namespace")   : $console->ask("What is the namespace of the class? ");
-        $class       = $request->hasOption("class")?       $request->getOption("class")       : $console->ask("What is the name of the class? ");
-        $destination = $request->hasOption("destination")? $request->getOption("destination") : $console->ask("Where do you want to save the class? ");
+        $console = new Console;
+
+        $fields = [];
+
+        $fields['namespace'] = $request->hasOption("namespace")? $request->getOption("namespace") : $console->ask("What is the namespace of the class? ");
+        $class               = $request->hasOption("class")?     $request->getOption("class")     : $console->ask("What is the name of the class? ");
+        $dirname             = $request->hasOption("dirname")?   $request->getOption("dirname")   : $console->ask("Where do you want to save the class? ");
 
         $classes = [$class];
 
@@ -50,18 +53,38 @@ final class CreateClassCommand extends Command
             $classes = explode(",", $class);
         }
 
+        // Create an bidimensional array with the name of the directory,
+        // the name of the file and the name of the class.
+        // The remaining lines will be each of the files created.
+        $data = [[
+            Console::format("Directory Name", Console::TEXT_DECORATION_BOLD),
+            Console::format("File Name", Console::TEXT_DECORATION_BOLD),
+            Console::format("Class Name", Console::TEXT_DECORATION_BOLD)
+        ]];
+
         foreach ($classes as $class) {
-            $filename = PathSupport::join($destination, $class . PHP_FILE_EXTENSION);
-    
-            $result = $stub->compute(compact("namespace", "class"));
-    
-            $file = new LocalFile($filename);
-    
-            if ($file->exists()) {
-                $file->clear();
-            }
-    
-            $file->write($result);
+            $fields['class'] = $class;
+
+            $filename = PathSupport::join($dirname, $class . PHP_FILE_EXTENSION);
+
+            $file = $stub->clone($filename, $fields);
+
+            $data[] = [
+                DIRECTORY_SEPARATOR . $file->getDirectory(),
+                DIRECTORY_SEPARATOR . $file->getName() . '.' . $file->getExtension(),
+                $class
+            ];
         }
+
+        // Count decrements the first line of the table which is the header.
+        // It is used to count the number of files created.
+        $fileCount = count($data) - 1;
+
+        $console->writeLine(sprintf(
+            "%d files created in %.10f milliseconds.", $fileCount, Performance::end())
+        );
+
+        // Prints an table CLI component to make the output more readable.
+        $console->writeLine(Table::new($data)->toString());
     }
 }

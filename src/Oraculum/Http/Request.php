@@ -4,8 +4,6 @@ namespace Oraculum\Http;
 
 use Oraculum\Contracts\FromCapture;
 use Oraculum\Http\Contracts\Communicable;
-use Oraculum\Http\Enums\StatusCode;
-use Oraculum\Http\Support\Header as HeaderSupport;
 use Oraculum\Http\Support\Request as RequestSupport;
 use Oraculum\Support\Primitives\PrimitiveObject;
 

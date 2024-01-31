@@ -23,13 +23,6 @@ abstract class Command extends PrimitiveObject
     protected $description = null;
 
     /**
-     * The request of the command.
-     * 
-     * @var Request
-     */
-    protected $request;
-
-    /**
      * Get the signature of the command.
      * 
      * @return string The signature of the command.

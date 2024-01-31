@@ -1,6 +1,6 @@
 <?php
 
-namespace Miscellaneous\Cli\Commands;
+namespace Oraculum\Cli\Commands;
 
 use Oraculum\Cli\Abstracts\Command;
 use Oraculum\Cli\Console;
@@ -48,11 +48,16 @@ final class HelpCommand extends Command
     protected function handle()
     {
         $this->console->writeLine('Commands available:',
-            Console::TEXT_BLUE | Console::TEXT_DECORATION_ITALIC | Console::TEXT_DECORATION_BOLD
+            Console::TEXT_DECORATION_ITALIC | Console::TEXT_DECORATION_BOLD
         );
 
         foreach ($this->console->getCommands() as $signature => $command) {
-            $this->console->write(sprintf("%' 30s ", $signature), Console::TEXT_MAGENTA);
+            // Write the command signature in a bold text style.
+            // This helps to identify the command signature in the CLI output.
+            $this->console->write(sprintf("%' 30s ", $signature),
+                Console::TEXT_DECORATION_BOLD
+            );
+
             $this->console->writeLine($command->getDescription());
         }
 

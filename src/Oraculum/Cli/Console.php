@@ -2,6 +2,7 @@
 
 namespace Oraculum\Cli;
 
+use Oraculum\Cli\Commands\HelpCommand;
 use Oraculum\Cli\Support\Console as ConsoleSupport;
 use Oraculum\Support\Primitives\PrimitiveObject;
 use Oraculum\Support\System as SystemSupport;
@@ -36,11 +37,21 @@ final class Console extends PrimitiveObject
     const TEXT_BACKGROUND_WHITE   = 524288;
 
     /**
+     * @var string The console buffer.
+     */
+    private $buffer = '';
+
+    /**
+     * @var array<string, Abstracts\Command> The registered commands.
+     */
+    private $commands = [];
+
+    /**
      * Defines the associated code for each flag.
      *
      * @var array<int, int>
      */
-    private $formats = [
+    private static $formats = [
         self::TEXT_DECORATION_BOLD          => 1,
         self::TEXT_DECORATION_ITALIC        => 3,
         self::TEXT_DECORATION_UNDERLINE     => 4,
@@ -66,13 +77,6 @@ final class Console extends PrimitiveObject
     ];
 
     /**
-     * The registered commands.
-     *
-     * @var array<string, Abstracts\Command>
-     */
-    private $commands = [];
-
-    /**
      * Formats a message with the specified flags.
      *
      * @param string $message The message to be formatted.
@@ -80,11 +84,11 @@ final class Console extends PrimitiveObject
      *
      * @return string The formatted message.
      */
-    private function format($message, $flags = 0)
+    public static function format($message, $flags = 0)
     {
         $formats = [];
 
-        foreach ($this->formats as $flag => $format) {
+        foreach (self::$formats as $flag => $format) {
             if ($flags & $flag) {
                 $formats[] = $format;
             }
@@ -92,7 +96,21 @@ final class Console extends PrimitiveObject
 
         $formats = implode(';', $formats);
 
+        // e.g. Hello -> [32mHello[39m]
         return "\e[" . $formats . "m" . $message . "\e[0m";
+    }
+
+    /**
+     * Normalizes a message with ANSI codes.
+     * 
+     * @param string $message The message to be normalized.
+     * 
+     * @return string The normalized message.
+     */
+    public static function normalize($message)
+    {
+        // e.g. [32mHello[39m] -> Hello
+        return preg_replace('#\\x1b[[][^A-Za-z]*[A-Za-z]#', '', $message);
     }
 
     /**
@@ -150,6 +168,18 @@ final class Console extends PrimitiveObject
     }
 
     /**
+     * Creates a new instance of the class.
+     * 
+     * @return void
+     */
+    public function __construct()
+    {
+        // This is a good approach because it makes it easier to identify the
+        // commands available to the user.
+        $this->setCommand(new HelpCommand($this));
+    }
+
+    /**
      * Checks if a command exists.
      *
      * @param string $signature The signature of the command.
@@ -204,22 +234,22 @@ final class Console extends PrimitiveObject
      *
      * @param Request $request The request to be handled.
      *
-     * @throws UnexpectedValueException If the request is invalid.
+     * @throws UnexpectedValueException If the given command does not exist.
      *
      * @return Abstracts\Command The command to be executed.
      */
     public function handleRequest($request)
     {
+        // Check if the current request has a command or not.
+        // If the request does not have a command, returns the help command.
         if (!$request->hasCommand()) {
-            throw new UnexpectedValueException(
-                "No command supplied."
-            );
+            return $this->getCommand("help");
         }
 
+        // If the given command does not exist, throws an exception.
         if (!$command = $this->getCommand($request->getCommand())) {
             throw new UnexpectedValueException(sprintf(
-                "Command [%s] not found.",
-                $request->getCommand()
+                "Command [%s] not found.", $request->getCommand()
             ));
         }
 

@@ -23,7 +23,7 @@ final class ServeCommand extends Command
      * 
      * @var string|null
      */
-    protected $description = "Starts an development server specified by [--host=0.0.0.0] and [--port=80].";
+    protected $description = "Starts an development server specified by [--host=0.0.0.0], [--port=80] and [--output-logs].";
 
     /**
      * Handle the command.
@@ -51,13 +51,29 @@ final class ServeCommand extends Command
 
         $process = new Process([PHP_BINARY, "-S", $hostAndPort, $file->getFilename()]);
 
-        $process->setHandler(function ($pipe, $line) use ($console, $hostAndPort) {
+        $process->setHandler(function ($pipe, $line) use ($request, $console, $hostAndPort) {
+            // It verifies if the current PHP output line contains the "Permission denied" message
+            // and masks it to the command format.
             if (str_contains($line, "Permission denied")) {
-                $console->writeLine(sprintf("Failed to listen on %s. Permission denied.", $hostAndPort), Console::TEXT_RED);
+                $console->writeLine(sprintf("Failed to listen on %s. Permission denied.", $hostAndPort));
+                return;
             }
 
-            if (str_contains($line, "Development Server")) {
-                $console->writeLine(sprintf("Development server started at http://%s.", $hostAndPort), Console::TEXT_BLUE);
+            // It verifies if the current PHP output line contains the "Development Server" message
+            // and masks it to the command format.
+            else if (str_contains($line, "Development Server")) {
+                $console->writeLine(sprintf("Development server started at http://%s.", $hostAndPort));
+                
+                // Show an message of waiting for requests if output-logs is set.
+                // Allow the user to know that the output is anabled.
+                $request->hasOption('output-logs')
+                ? $console->writeLine("Waiting for requests...")
+                : null;
+            }
+
+            // Outputs the standard PHP output if the output-logs is set.
+            else if ($request->hasOption('output-logs')) {
+                $console->write($line);
             }
         });
 

@@ -17,6 +17,7 @@ $dependencies = [
 
     __DIR__ . '/src/Oraculum/FileSystem/Abstracts/File.php',
     __DIR__ . '/src/Oraculum/FileSystem/File.php',
+    __DIR__ . '/src/Oraculum/FileSystem/ReadonlyFile.php',
     __DIR__ . '/src/Oraculum/FileSystem/CacheFile.php',
 
     __DIR__ . '/src/Oraculum/Autoloader/Autoloader.php'

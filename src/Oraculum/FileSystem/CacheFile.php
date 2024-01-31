@@ -6,9 +6,9 @@ use Oraculum\Support\Path as PathSupport;
 
 /**
  * @template TData
- * @template-implements File<TData>
+ * @template-implements ReadonlyFile<TData>
  */
-final class CacheFile extends File
+final class CacheFile extends ReadonlyFile
 {
     /**
      * Creates a new instance of the class.
@@ -21,7 +21,11 @@ final class CacheFile extends File
     {
         $hash = md5($name);
 
-        $this->filename = PathSupport::join(__STORAGE_DIR__, "cache", $hash);
+        // Attaches the cache directory.
+        // e.g. /storage/cache
+        $filename = PathSupport::join(__STORAGE_DIR__, "cache", $hash);
+
+        parent::__construct($filename);
     }
 
     /**
@@ -34,14 +38,14 @@ final class CacheFile extends File
     public function memorize($data)
     {
         if ($this->exists()) {
-            return $this->read(true);
+            return unserialize($this->read());
         }
 
         if (is_callable($data)) {
             $data = $data();
         }
 
-        $this->write($data, true);
+        $this->write(serialize($data));
 
         return $data;
     }

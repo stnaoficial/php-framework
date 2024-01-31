@@ -19,6 +19,8 @@ class LocalFile extends File
      */
     public function __construct($filename)
     {
-        $this->filename = PathSupport::basePath($filename);
+        $filename = PathSupport::basePath($filename);
+    
+        parent::__construct($filename);
     }
 }

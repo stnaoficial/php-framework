@@ -8,7 +8,7 @@ use Oraculum\FileSystem\Abstracts\File as AbstractFile;
  * @template TData
  * @template-implements AbstractFile<TData>
  */
-class File extends AbstractFile
+class ReadonlyFile extends AbstractFile
 {
     /**
      * Gets the size of the file.
@@ -77,7 +77,7 @@ class File extends AbstractFile
      * 
      * @return false|int Returns the number of bytes written to the file, or `false` on failure.
      */
-    public function write($data)
+    protected function write($data)
     {
         $dir = dirname($this->filename);
 
@@ -95,7 +95,7 @@ class File extends AbstractFile
      * 
      * @return bool Returns `true` on success, `false` on failure.
      */
-    public function clear()
+    protected function clear()
     {
         if (!is_writable($this->filename)) {
             return false;
@@ -121,7 +121,7 @@ class File extends AbstractFile
      * 
      * @return bool Returns `true` on success, `false` on failure.
      */
-    public function delete()
+    protected function delete()
     {
         if (!is_file($this->filename)) {
             return false;

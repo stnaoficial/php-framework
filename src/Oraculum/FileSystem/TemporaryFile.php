@@ -23,7 +23,9 @@ final class TemporaryFile extends File
         try {
             $dir = sys_get_temp_dir();
 
-            $this->filename = tempnam($dir, $prefix);
+            $filename = tempnam($dir, $prefix);
+
+            parent::__construct($filename);
 
         } catch (Throwable $t) {
             throw new TemporaryFileException($t->getMessage(), $t->getCode(), $t);
