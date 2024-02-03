@@ -12,20 +12,20 @@ final class Annotation
     use NonInstantiable;
 
     /**
-     * The regex pattern to parse documentation comments.
+     * The regex pattern to parse doc comments.
      */
-    const DOCUMENTATION_COMMENT_PATTERN = "#(@[a-zA-Z]+\s*[a-zA-Z0-9, ()_].*)#";
+    const DOC_COMMENT_PATTERN = "#(@[a-zA-Z]+\s*[a-zA-Z0-9, ()_].*)#";
 
     /**
-     * Parse the documentation comment into an associative array.
+     * Parse the doc comment into an associative array.
      * 
-     * @param string $comment The documentation comment to parse.
+     * @param string $comment The doc comment to parse.
      * 
      * @return array<string> An array of annotations.
      */
     private static function parseDocComment($comment)
     {
-        preg_match_all(self::DOCUMENTATION_COMMENT_PATTERN, $comment, $matches, PREG_PATTERN_ORDER);
+        preg_match_all(self::DOC_COMMENT_PATTERN, $comment, $matches, PREG_PATTERN_ORDER);
 
         if (!is_array($matches) || !is_array($matches[1])) {
             return [];

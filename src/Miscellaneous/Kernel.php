@@ -122,7 +122,7 @@ final class Kernel extends PrimitiveObject
     private function setAlias($name, $value, $overwrite = true)
     {
         if (!$this->hasAlias($name)) {
-            $this->aliases[$name] = compact('value', 'overwrite');
+            $this->aliases[$name] = compact('name', 'value', 'overwrite');
             return;
         }
 
@@ -250,13 +250,13 @@ final class Kernel extends PrimitiveObject
     private function registerBaseAliases()
     {
         // Kernel release aliases (should not be overwritten by the user)
-        $this->setAlias("kernel.release.version", "1.0.0", false);
-        $this->setAlias("kernel.release.name", "Alpine", false);
-        $this->setAlias("kernel.release.year", "2024", false);
+        $this->setAlias("release.version", "1.0.0", false);
+        $this->setAlias("release.name", "Alpine", false);
+        $this->setAlias("release.year", "2024", false);
 
         // Kernel internal aliases (could be overwritten by the user)
         // Provides a more convenient way to work with the kernel during development.
-        $this->setAlias("kernel.mode", "production");
+        $this->setAlias("mode", "production");
     }
 
     /**
@@ -268,8 +268,31 @@ final class Kernel extends PrimitiveObject
     {
         // Base services (should not be overwritten by the user)
         // Provides the basic functionalities of the kernel.
-        $this->setService(new ExceptionServiceProvider);
+        $this->setService(new ExceptionHandlingServiceProvider);
         $this->setService(new RoutingServiceProvider);
+    }
+
+    /**
+     * Setup the given alias.
+     * 
+     * @param array $alias The alias to setup.
+     * 
+     * @return void
+     */
+    private function setupAlias($alias)
+    {
+        switch ($alias['name']) {
+            case 'mode':
+                in_array($alias["value"], ["dev", "develop", "development"]) && $this->showErrors();
+                break;
+            case 'boot.files':
+                foreach ($alias["value"] as $filename) {
+                    require_once $filename;
+                }
+                break;
+            default:
+                break;
+        }
     }
 
     /**
@@ -280,9 +303,7 @@ final class Kernel extends PrimitiveObject
     private function setupAliases()
     {
         foreach ($this->aliases as $name => $alias) {
-            if ($name === "kernel.mode" && in_array($alias["value"], ["dev", "develop", "development"])) {
-                $this->showErrors();
-            }
+            $this->setupAlias($alias);
         }
     }
 

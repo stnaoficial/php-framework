@@ -54,8 +54,9 @@ class ConsoleServiceProvider extends ServiceProvider
      */
     private function registerCommands()
     {
-        $this->console->setCommand(new Cli\Commands\ServeCommand());
-        $this->console->setCommand(new Cli\Commands\CreateClassCommand());
+        $this->console->setCommand(new Cli\Commands\ServeCommand);
+        $this->console->setCommand(new Cli\Commands\WriteCommand);
+        $this->console->setCommand(new Cli\Commands\CreateClassCommand);
     }
 
     /**

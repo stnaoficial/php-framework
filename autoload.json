@@ -1,13 +1,13 @@
 {
+    "version": "8.3.1",
     "require": [
         "/src/Miscellaneous/Http/helpers.php",
         "/src/Miscellaneous/helpers.php",
-
         "/src/Oraculum/Container/helpers.php",
         "/src/Oraculum/Http/helpers.php",
         "/src/Oraculum/Hydration/helpers.php",
         "/src/Oraculum/Wrapper/helpers.php",
-        "/src/Oraculum/helpers.php"
+        "/src/Oraculum/Support/helpers.php"
     ],
     "resolve": {
         "Miscellaneous\\": "/src/Miscellaneous",

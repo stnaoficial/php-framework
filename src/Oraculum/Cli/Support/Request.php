@@ -72,7 +72,7 @@ final class Request
     /**
      * Retrieves the command from the arguments array.
      *
-     * @throws InvalidArgumentException If the command line arguments are invalid.
+     * @throws InvalidArgumentException  If some argument is invalid.
      * 
      * @return string|null The command or null if not found.
      */
@@ -89,7 +89,7 @@ final class Request
 
             if ($key > 0) {
                 throw new InvalidArgumentException(sprintf(
-                    "Invalid command position [%s]. Please check your arguments and try again.", $value
+                    "Invalid argument [%s]. Please check your arguments and try again.", $value
                 ));
             }
 

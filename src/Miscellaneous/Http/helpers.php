@@ -10,8 +10,6 @@ if (!function_exists('response')) {
      */
     function response($media = null)
     {
-        $response = \Miscellaneous\Http\Response::fromMedia($media);
-
-        return $response;
+        return \Miscellaneous\Http\Response::fromMedia($media);
     }
 }

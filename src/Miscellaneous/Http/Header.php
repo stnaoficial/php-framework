@@ -7,7 +7,7 @@ use Oraculum\Contracts\Media;
 use Oraculum\FileSystem\Contracts\FromFile;
 use Oraculum\FileSystem\File;
 use Oraculum\Http\Header as BaseHeader;
-use Oraculum\Http\Support\MimeType as MimeTypeSupport;
+use Oraculum\FileSystem\Support\MimeType as MimeTypeSupport;
 use Oraculum\Json\Contracts\FromJson;
 use Oraculum\Json\Json;
 

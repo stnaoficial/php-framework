@@ -8,8 +8,6 @@ if (!function_exists('container')) {
      */
     function container()
     {
-        $container = \Oraculum\Container\Container::getInstance();
-
-        return $container;
+        return \Oraculum\Container\Container::getInstance();
     }
 }

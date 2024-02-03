@@ -289,4 +289,16 @@ abstract class File extends PrimitiveObject implements Media, Stringable
             
         return fileatime($this->filename) > time();
     }
+
+    /**
+     * Copies the file to a new location.
+     * 
+     * @param string $filename The filename of the new file.
+     * 
+     * @return bool Returns `true` on success, `false` on failure.
+     */
+    public function copy($filename)
+    {
+        return copy($this->filename, $filename);
+    }
 }

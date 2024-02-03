@@ -117,6 +117,19 @@ class File extends AbstractFile
     }
 
     /**
+     * Overwrites the contents of the file.
+     * 
+     * @param TData $data The data to write to the file.
+     * 
+     * @return false|int Returns the number of bytes written to the file, or `false` on failure.
+     */
+    public function overwrite($data)
+    {
+        $this->clear();
+        return $this->write($data);
+    }
+
+    /**
      * Deletes the file.
      * 
      * @return bool Returns `true` on success, `false` on failure.

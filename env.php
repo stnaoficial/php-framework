@@ -23,17 +23,24 @@ if (!defined('__WORKING_DIR__')) {
 }
 
 /**
+ * The framework directory constant.
+ */
+if (!defined('__FRAMEWORK_DIR__')) {
+    define('__FRAMEWORK_DIR__', __DIR__);
+}
+
+/**
  * The source directory constant.
  */
 if (!defined('__SOURCE_DIR__')) {
-    define('__SOURCE_DIR__', __DIR__ . '/src');
+    define('__SOURCE_DIR__', __FRAMEWORK_DIR__ . '/src');
 }
 
 /**
  * The storage directory constant.
  */
 if (!defined('__STORAGE_DIR__')) {
-    define('__STORAGE_DIR__', __DIR__ . '/storage');
+    define('__STORAGE_DIR__', __FRAMEWORK_DIR__ . '/storage');
 }
 
 /**

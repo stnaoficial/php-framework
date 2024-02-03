@@ -40,16 +40,4 @@ final class Arr
 
         return $result;
     }
-
-    /**
-     * Returns the last item and return an list with their value and key.
-     * 
-     * @param  array $items The items to fetch.
-     * 
-     * @return array{value: mixed, key: array-key} The last item.
-     */
-    public static function last($items)
-    {
-        return ['value' => end($items), 'key' => key($items)];
-    }
 }

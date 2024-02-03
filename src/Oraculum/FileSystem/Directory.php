@@ -37,7 +37,7 @@ final class Directory extends AbstractFile
      * @return false|int Returns the size of the directory, or `false` on failure.
      */
     public function getSize()
-    {        
+    {
         if (!is_dir($this->filename)) {
             return false;
         }

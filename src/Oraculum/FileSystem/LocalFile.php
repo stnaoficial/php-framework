@@ -2,6 +2,7 @@
 
 namespace Oraculum\FileSystem;
 
+use Oraculum\Support\Attributes\Override;
 use Oraculum\Support\Path as PathSupport;
 
 /**
@@ -17,6 +18,7 @@ class LocalFile extends File
      * 
      * @return void
      */
+    #[Override]
     public function __construct($filename)
     {
         $filename = PathSupport::basePath($filename);

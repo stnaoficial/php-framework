@@ -10,8 +10,6 @@ if (!function_exists('baseUrl')) {
      */
     function baseUrl($uri = null)
     {
-        $baseUrl = \Oraculum\Http\Support\Server::baseUrl($uri);
-
-        return $baseUrl;
+        return \Oraculum\Http\Support\Server::baseUrl($uri);
     }
 }

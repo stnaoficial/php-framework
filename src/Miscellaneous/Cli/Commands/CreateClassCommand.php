@@ -6,7 +6,9 @@ use Oraculum\Cli\Abstracts\Command;
 use Oraculum\Cli\Components\Table;
 use Oraculum\Cli\Console;
 use Oraculum\Cli\Request;
-use Oraculum\FileSystem\StubFile;
+use Oraculum\Cli\Support\Ansi as AnsiSupport;
+use Oraculum\FileSystem\File;
+use Oraculum\Stub\Stub;
 use Oraculum\Support\Path as PathSupport;
 use Oraculum\Support\Performance;
 
@@ -17,7 +19,7 @@ final class CreateClassCommand extends Command
      * 
      * @var string
      */
-    protected $signature = "create-class";
+    protected $signature = "create:class";
 
     /**
      * The description of the command.
@@ -27,64 +29,68 @@ final class CreateClassCommand extends Command
     protected $description = "Create a new class with the especified [--namespace], [--class=<name>,...>] and [--dirname].";
 
     /**
-     * Handle the command.
+     * Creates a new instance of the class.
      * 
      * @return void
      */
-    protected function handle()
+    public function __construct()
     {
-        Performance::start();
+        $this->registerHandler();
+    }
 
-        $stub = new StubFile(__SOURCE_DIR__ . "/Miscellaneous/resources/stubs/class.stub");
+    /**
+     * Registers the command handler.
+     * 
+     * @return void
+     */
+    private function registerHandler()
+    {
+        $this->setHandler(function(Console $console, Request $request) {
+            Performance::start();
 
-        $request = Request::fromCapture();
+            $fields = [];
 
-        $console = new Console;
+            $fields['namespace'] = $request->hasOption("namespace")? $request->getOption("namespace") : $console->ask("What is the namespace of the class? ");
+            $class               = $request->hasOption("class")?     $request->getOption("class")     : $console->ask("What is the name of the class? ");
+            $dirname             = $request->hasOption("dirname")?   $request->getOption("dirname")   : $console->ask("Where do you want to save the class? ");
 
-        $fields = [];
+            // Create an bidimensional array with the name of the directory,
+            // the name of the file and the name of the class.
+            // The remaining lines will be each of the files created.
+            $data = [[
+                AnsiSupport::format("Directory Name", AnsiSupport::DECORATION_BOLD),
+                AnsiSupport::format("File Name", AnsiSupport::DECORATION_BOLD),
+                AnsiSupport::format("Class Name", AnsiSupport::DECORATION_BOLD)
+            ]];
 
-        $fields['namespace'] = $request->hasOption("namespace")? $request->getOption("namespace") : $console->ask("What is the namespace of the class? ");
-        $class               = $request->hasOption("class")?     $request->getOption("class")     : $console->ask("What is the name of the class? ");
-        $dirname             = $request->hasOption("dirname")?   $request->getOption("dirname")   : $console->ask("Where do you want to save the class? ");
+            $stub = Stub::ofPhpClass();
 
-        $classes = [$class];
+            foreach (explode(',', $class) as $class) {
+                $fields['class'] = $class;
 
-        if (str_contains($class, ",")) {
-            $classes = explode(",", $class);
-        }
+                $filename = PathSupport::join($dirname, $class . PHP_FILE_EXTENSION);
 
-        // Create an bidimensional array with the name of the directory,
-        // the name of the file and the name of the class.
-        // The remaining lines will be each of the files created.
-        $data = [[
-            Console::format("Directory Name", Console::TEXT_DECORATION_BOLD),
-            Console::format("File Name", Console::TEXT_DECORATION_BOLD),
-            Console::format("Class Name", Console::TEXT_DECORATION_BOLD)
-        ]];
+                $file = new File($filename);
 
-        foreach ($classes as $class) {
-            $fields['class'] = $class;
+                $file->overwrite($stub->fill($fields));
 
-            $filename = PathSupport::join($dirname, $class . PHP_FILE_EXTENSION);
+                $data[] = [
+                    DIRECTORY_SEPARATOR . $file->getDirectory(),
+                    $file->getName() . '.' . $file->getExtension(),
+                    $class
+                ];
+            }
 
-            $file = $stub->clone($filename, $fields);
+            // Count decrements the first line of the table which is the header.
+            // It is used to count the number of files created.
+            $fileCount = count($data) - 1;
 
-            $data[] = [
-                DIRECTORY_SEPARATOR . $file->getDirectory(),
-                DIRECTORY_SEPARATOR . $file->getName() . '.' . $file->getExtension(),
-                $class
-            ];
-        }
+            $console->writeLine(sprintf(
+                "%d files created in %.10f milliseconds.", $fileCount, Performance::end()
+            ), 2);
 
-        // Count decrements the first line of the table which is the header.
-        // It is used to count the number of files created.
-        $fileCount = count($data) - 1;
-
-        $console->writeLine(sprintf(
-            "%d files created in %.10f milliseconds.", $fileCount, Performance::end())
-        );
-
-        // Prints an table CLI component to make the output more readable.
-        $console->writeLine(Table::new($data)->toString());
+            // Prints an table CLI component to make the output more readable.
+            $console->writeLine(Table::new($data, 'single')->toString());
+        });
     }
 }

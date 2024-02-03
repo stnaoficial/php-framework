@@ -319,6 +319,8 @@ final class Process extends PrimitiveObject
      */
     public function terminate()
     {
+        // Close all pipes that were opened during the process execution
+        // otherwise, the process will hang forever.
         foreach ($this->pipes as $pipe) {
             is_resource($pipe) && fclose($pipe);
         }
@@ -327,6 +329,8 @@ final class Process extends PrimitiveObject
             return false;
         }
 
+        // Send SIGTERM to the process and wait for it to terminate in a POSIX 
+        // environment.
         if (function_exists('posix_kill')) {
             call_user_func('posix_kill', $this->getParentPid(), SIGTERM);
         }
@@ -337,6 +341,7 @@ final class Process extends PrimitiveObject
             );
         }
 
+        // Flush the process internals.
         $this->info  = [];
         $this->pipes = [];
 

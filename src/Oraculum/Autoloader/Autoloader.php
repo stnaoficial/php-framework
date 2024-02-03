@@ -25,6 +25,11 @@ final class Autoloader extends PrimitiveObject
     private $file;
 
     /**
+     * @var string The PHP version of the module.
+     */
+    private $version = PHP_VERSION;
+
+    /**
      * @var array<string> The required files.
      */
     private $requiredFiles = [];
@@ -57,8 +62,7 @@ final class Autoloader extends PrimitiveObject
 
         if (!$this->file->exists()) {
             throw new InvalidArgumentException(sprintf(
-                "File %s does not exist.",
-                $this->file
+                "File %s does not exist.", $this->file->getFilename()
             ));
         }
 
@@ -93,6 +97,7 @@ final class Autoloader extends PrimitiveObject
      */
     private function setComputedOptions($options)
     {
+        $this->version              = $options['version'];
         $this->requiredFiles        = $options['require'];
         $this->namespaceResolutions = $options['resolve'];
     }
@@ -105,6 +110,7 @@ final class Autoloader extends PrimitiveObject
     private function getComputedOptions()
     {
         return [
+            'version' => $this->version,
             'require' => $this->requiredFiles,
             'resolve' => $this->namespaceResolutions
         ];
@@ -114,11 +120,27 @@ final class Autoloader extends PrimitiveObject
      * Binds options to the autoloader.
      *
      * @param array $options The options to bind.
+     * 
+     * @throws UnexpectedValueException If the PHP version is not set or too old.
      *
      * @return void
      */
     private function bindOptions($options)
     {
+        if (!isset($options['version'])) {
+            throw new UnexpectedValueException(sprintf(
+                "The autoloader requires a version option to be set."
+            ));
+        }
+
+        if (version_compare(PHP_VERSION, $options['version'], '<')) {
+            throw new UnexpectedValueException(sprintf(
+                'The autoloader requires PHP version %s or higher. Getting %s.', $options['version'], PHP_VERSION
+            ));
+        }
+
+        $this->version = $options['version'];
+
         if (isset($options['require'])) {
             foreach ($options['require'] as $filename) {
                 $this->requiredFiles[] = PathSupport::join($this->file->getDirectory(), $filename);
@@ -135,27 +157,36 @@ final class Autoloader extends PrimitiveObject
     /**
      * Binds options recursively to the autoloader.
      *
-     * @param string $filename The filename to get the options from.
+     * @param string $filename The autoload filename to get the options from.
+     * 
+     * @throws InvalidArgumentException If some autoload file does match the requirements.
+     * @throws UnexpectedValueException If the PHP version is not set or too old.
      *
      * @return void
      */
     private function bindOptionsRecursively($filename)
     {
+        // We are using the parent directory as the root directory for the
+        // currently binding file.
         $filename = PathSupport::join($this->file->getDirectory(), $filename);
 
         $this->file = new File($filename);
 
         if (!$this->file->exists()) {
             throw new InvalidArgumentException(sprintf(
-                "File %s does not exist.",
-                $this->file
+                "File %s does not exist.", $filename
+            ));
+        }
+
+        if ($this->file->getBasename() !== 'autoload.json') {
+            throw new InvalidArgumentException(sprintf(
+                "%s is not a valid autoload file name.", $filename
             ));
         }
 
         if (!$contents = $this->file->read()) {
             throw new InvalidArgumentException(sprintf(
-                "Unable to get the contents of file %s.",
-                $this->file
+                "Unable to get the contents of file %s.", $filename
             ));
         }
 
@@ -171,14 +202,32 @@ final class Autoloader extends PrimitiveObject
     /**
      * Build dependencies.
      *
-     * @throws InvalidArgumentException If be unable to get file contents.
-     * @throws UnexpectedValueException If be unable to decode.
+     * @throws InvalidArgumentException If some autoload file does match the requirements.
+     * @throws UnexpectedValueException If the PHP version is not set or too old.
      *
      * @return void
      */
     private function build()
     {
+        // We must initialize binding the options by the basename of the file
+        // because its the root autoload file.
         $this->bindOptionsRecursively($this->file->getBasename());
+    }
+
+    /**
+     * Requires a dependency to the autoloader.
+     * 
+     * @param string $filename The filename to require.
+     * 
+     * @return void
+     */
+    public function require($filename)
+    {
+        if (isset($this->dependencies[$filename])) {
+            return;
+        }
+
+        require_once $this->dependencies[$filename] = $filename;
     }
 
     /**
@@ -189,11 +238,7 @@ final class Autoloader extends PrimitiveObject
     private function requireFiles()
     {
         foreach ($this->requiredFiles as $filename) {
-            if (isset($this->dependencies[$filename])) {
-                continue;
-            }
-
-            require_once $this->dependencies[$filename] = $filename;
+            $this->require($filename);
         }
     }
 
@@ -206,6 +251,9 @@ final class Autoloader extends PrimitiveObject
      */
     private function autoloader($class)
     {
+        // Check if the class name starts with the current namespace.
+        // If so, replace it with the full path to the file.
+        // e.g. App\Example\Class -> /app/Example/Class
         foreach ($this->namespaceResolutions as $namespace => $path) {
             if (str_starts_with($class, $namespace)) {
                 $class = str_replace($namespace, $path . DIRECTORY_SEPARATOR, $class);
@@ -213,14 +261,21 @@ final class Autoloader extends PrimitiveObject
             }
         }
 
+        // Replaces the namespace separator with a directory separator in the
+        // fully-qualified class name.
+        // e.g. App\Example\Class -> App/Example/Class
+        // Also adds the PHP file extension.
         $filename = str_replace(NAMESPACE_SEPARATOR, DIRECTORY_SEPARATOR, $class) . PHP_FILE_EXTENSION;
 
-        if (file_exists($filename) && !isset($this->dependencies[$filename])) {
-            require_once $this->dependencies[$filename] = $filename;
-            return true;
+        // Return false if the file does not exist.
+        // This helps to avoid fatal errors when the class is not found.
+        if (!file_exists($filename)) {
+            return false;
         }
-
-        return false;
+        
+        $this->require($filename);
+        
+        return true;
     }
 
     /**
@@ -265,6 +320,9 @@ final class Autoloader extends PrimitiveObject
     /**
      * Starts the autoloader.
      *
+     * @throws InvalidArgumentException If some autoload file does match the requirements.
+     * @throws UnexpectedValueException If the PHP version is not set or too old.
+     * 
      * @return void
      */
     public function autoload()

@@ -4,16 +4,10 @@ namespace Oraculum\Cli\Commands;
 
 use Oraculum\Cli\Abstracts\Command;
 use Oraculum\Cli\Console;
+use Oraculum\Cli\Support\Ansi as AnsiSupport;
 
 final class HelpCommand extends Command
 {
-    /**
-     * The console instance.
-     * 
-     * @var Console
-     */
-    private $console;
-
     /**
      * The signature of the command.
      * 
@@ -29,38 +23,53 @@ final class HelpCommand extends Command
     protected $description = "Print help information.";
 
     /**
+     * @var array<array-key, Command> The list of commands.
+     */
+    private $commands;
+
+    /**
      * Creates a new instance of the class.
      * 
-     * @param \Oraculum\Cli\Console $console The console instance.
+     * @param array<array-key, Command> $commands The list of commands.
      * 
      * @return void
      */
-    public function __construct($console)
+    public function __construct($commands)
     {
-        $this->console = $console;
+        $this->commands = $commands;
+
+        $this->registerHandler();
     }
 
     /**
-     * Handle the command.
+     * Registers the command handler.
      * 
      * @return void
      */
-    protected function handle()
+    private function registerHandler()
     {
-        $this->console->writeLine('Commands available:',
-            Console::TEXT_DECORATION_ITALIC | Console::TEXT_DECORATION_BOLD
-        );
+        $this->setHandler(function() {
+            $console = Console::getInstance();
 
-        foreach ($this->console->getCommands() as $signature => $command) {
-            // Write the command signature in a bold text style.
-            // This helps to identify the command signature in the CLI output.
-            $this->console->write(sprintf("%' 30s ", $signature),
-                Console::TEXT_DECORATION_BOLD
-            );
+            $console->writeLine(AnsiSupport::format('Commands available:',
+                AnsiSupport::DECORATION_ITALIC | AnsiSupport::DECORATION_BOLD
+            ));
 
-            $this->console->writeLine($command->getDescription());
-        }
+            // Puts the help command in the first position of the list of commands.
+            // This helps to indentify it self as a command available.
+            array_unshift($this->commands, $this);
 
-        $this->console->writeLine(sprintf("%' 30s ", '...'));
+            foreach ($this->commands as $command) {
+                // Write the command signature in a bold text style.
+                // This helps to identify the command signature in the CLI output.
+                $console->write(AnsiSupport::format(sprintf("%' 30s ", $command->getSignature()),
+                    AnsiSupport::DECORATION_BOLD
+                ));
+
+                $console->writeLine($command->getDescription());
+            }
+
+            $console->writeLine(sprintf("%' 30s ", '...'));
+        });
     }
 }

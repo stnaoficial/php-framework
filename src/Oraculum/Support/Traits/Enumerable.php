@@ -5,7 +5,7 @@ namespace Oraculum\Support\Traits;
 use BackedEnum;
 
 /**
- * @template TValue of array-key
+ * @template TValue
  * @template-implements BackedEnum<TValue, static>
  */
 trait Enumerable

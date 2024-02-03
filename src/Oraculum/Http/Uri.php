@@ -27,7 +27,7 @@ class Uri extends PrimitiveObject implements Stringable
     /**
      * Gets the URI segments.
      * 
-     * @return array<array-key, string> The URI segments.
+     * @return array<int, string> The URI segments.
      */
     public function getSegments()
     {

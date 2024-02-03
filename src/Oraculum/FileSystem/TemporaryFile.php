@@ -3,6 +3,7 @@
 namespace Oraculum\FileSystem;
 
 use Oraculum\FileSystem\Exceptions\TemporaryFileException;
+use Oraculum\Support\Attributes\Override;
 use Throwable;
 
 /**
@@ -18,6 +19,7 @@ final class TemporaryFile extends File
      * 
      * @return void
      */
+    #[Override]
     public function __construct($prefix)
     {
         try {

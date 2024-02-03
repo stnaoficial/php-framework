@@ -2,8 +2,6 @@
 
 namespace Oraculum\Cli\Abstracts;
 
-use Closure;
-use Oraculum\Cli\Request;
 use Oraculum\Support\Primitives\PrimitiveObject;
 
 abstract class Command extends PrimitiveObject
@@ -21,6 +19,11 @@ abstract class Command extends PrimitiveObject
      * @var string|null
      */
     protected $description = null;
+
+    /**
+     * @var Closure|string The command handler.
+     */
+    private $handler;
 
     /**
      * Get the signature of the command.
@@ -43,19 +46,24 @@ abstract class Command extends PrimitiveObject
     }
 
     /**
-     * Handle the command.
+     * Set the handler of the command.
+     * 
+     * @param Closure|string $handler The handler of the command.
      * 
      * @return void
      */
-    protected abstract function handle();
+    public function setHandler($handler)
+    {
+        $this->handler = $handler;
+    }
 
     /**
      * Get the handler of the command.
      * 
-     * @return Closure
+     * @return Closure|string The handler of the command.
      */
     public function getHandler()
     {
-        return Closure::fromCallable([$this, 'handle']);
+        return $this->handler;
     }
 }

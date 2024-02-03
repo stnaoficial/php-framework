@@ -2,6 +2,7 @@
 
 namespace Oraculum\FileSystem;
 
+use Oraculum\Support\Attributes\Override;
 use Oraculum\Support\Path as PathSupport;
 
 /**
@@ -17,6 +18,7 @@ final class CacheFile extends ReadonlyFile
      * 
      * @return void
      */
+    #[Override]
     public function __construct($name)
     {
         $hash = md5($name);

@@ -2,9 +2,10 @@
 
 namespace Oraculum\Cli\Components;
 
-use Oraculum\Cli\Console;
+use Oraculum\Cli\Support\Ansi as AnsiSupport;
 use Oraculum\Contracts\Stringable;
 use Oraculum\Support\Primitives\PrimitiveObject;
+use UnexpectedValueException;
 
 final class Table extends PrimitiveObject implements Stringable
 {
@@ -14,40 +15,28 @@ final class Table extends PrimitiveObject implements Stringable
     private $data;
 
     /**
-     * @var array<string, string> The characters to be used in the table.
+     * @var array<string, string> The ANSI character symbols to be used.
      */
-    private $chars = [
-        'top'          => '═',
-        'top-mid'      => '╤',
-        'top-left'     => '╔',
-        'top-right'    => '╗',
-        'bottom'       => '═',
-        'bottom-mid'   => '╧',
-        'bottom-left'  => '╚',
-        'bottom-right' => '╝',
-        'left'         => '║ ',
-        'left-mid'     => '╟',
-        'mid'          => '─',
-        'mid-mid'      => '┼',
-        'right'        => ' ║',
-        'right-mid'    => '╢',
-        'middle'       => ' │ ',
-    ];
+    private $symbols;
 
     /**
      * Create a new instance of the class.
      * 
-     * @param array $data The data to be used in the table.
+     * @param array $data   The data to be used in the table.
+     * @param string $theme The ANSI theme to use.
      * 
      * @return void
      */
-    public function __construct($data)
+    public function __construct($data = [], $theme = 'classic')
     {
-        $this->data = $data;
+        $this->data    = $data;
+        $this->symbols = AnsiSupport::getBoxCharacterSymbols($theme);
     }
 
     /**
      * Get the computed column sizes.
+     * 
+     * @throws UnexpectedValueException If the table format is invalid.
      * 
      * @return array<int, int> The computed column sizes.
      */
@@ -59,16 +48,24 @@ final class Table extends PrimitiveObject implements Stringable
 
         foreach ($this->data as $row) {
             if (!is_array($row)) {
-                continue;
+                throw new UnexpectedValueException(
+                    'The table row must be an array.'
+                );
             }
 
             foreach ($row as $col) {
+                if (!is_string($col)) {
+                    throw new UnexpectedValueException(
+                        'The table column must be a string.'
+                    );
+                }
+
                 // Set the column size to 0 if it doesn't exist.
                 !isset($sizes[$key]) && $sizes[$key] = 0;
 
                 // Get the length of the column without ANSI codes for a more
                 // accurate comparison.
-                $len = strlen(Console::normalize($col));
+                $len = strlen(AnsiSupport::normalize($col));
 
                 // Set the length if it's bigger than the current.
                 $sizes[$key] < $len && $sizes[$key] = $len;
@@ -94,13 +91,13 @@ final class Table extends PrimitiveObject implements Stringable
         $line = [];
 
         foreach ($sizes as $size) {
-            $line[] = str_repeat($this->chars['top'], $size + 2);
+            $line[] = str_repeat($this->symbols['top'], $size + 2);
         }
 
         return (
-            $this->chars['top-left'] .
-            implode($this->chars['top-mid'], $line) .
-            $this->chars['top-right'] .
+            $this->symbols['top-left'] .
+            implode($this->symbols['top-center'], $line) .
+            $this->symbols['top-right'] .
             PHP_EOL
         );
     }
@@ -122,7 +119,7 @@ final class Table extends PrimitiveObject implements Stringable
 
             // This helps to avoid whitespace issues for styled texts by removing
             // ANSI codes.
-            $diff = strlen($col) - strlen(Console::normalize($col));
+            $diff = strlen($col) - strlen(AnsiSupport::normalize($col));
 
             // Sets the length to fill as the difference between the column
             // escaped and non-escaped size.
@@ -132,9 +129,9 @@ final class Table extends PrimitiveObject implements Stringable
         }
 
         return (
-            $this->chars['left'] .
-            implode($this->chars['middle'], $line) .
-            $this->chars['right'] .
+            $this->symbols['left'] .
+            implode($this->symbols['horizontal'], $line) .
+            $this->symbols['right'] .
             PHP_EOL
         );
     }
@@ -151,13 +148,13 @@ final class Table extends PrimitiveObject implements Stringable
         $line = [];
 
         foreach ($sizes as $size) {
-            $line[] = str_repeat($this->chars['mid'], $size + 2);
+            $line[] = str_repeat($this->symbols['vertical'], $size + 2);
         }
 
         return (
-            $this->chars['left-mid'] .
-            implode($this->chars['mid-mid'], $line) .
-            $this->chars['right-mid'] .
+            $this->symbols['left-center'] .
+            implode($this->symbols['middle'], $line) .
+            $this->symbols['right-center'] .
             PHP_EOL
         );
     }
@@ -174,14 +171,26 @@ final class Table extends PrimitiveObject implements Stringable
         $line = [];
 
         foreach ($sizes as $size) {
-            $line[] = str_repeat($this->chars['bottom'], $size + 2);
+            $line[] = str_repeat($this->symbols['bottom'], $size + 2);
         }
 
         return (
-            $this->chars['bottom-left'] .
-            implode($this->chars['bottom-mid'], $line) .
-            $this->chars['bottom-right']
+            $this->symbols['bottom-left'] .
+            implode($this->symbols['bottom-center'], $line) .
+            $this->symbols['bottom-right']
         );
+    }
+
+    /**
+     * Appends a row to the table.
+     * 
+     * @param array<int, string> $columns The row columns.
+     * 
+     * @return void
+     */
+    public function row($columns = [])
+    {
+        $this->data[] = $columns;
     }
 
     /**
@@ -196,10 +205,6 @@ final class Table extends PrimitiveObject implements Stringable
         $lines = [$this->getTopLine($sizes)];
 
         foreach ($this->data as $key => $row) {
-            if (!is_array($row)) {
-                continue;
-            }
-
             $lines[] = $this->getRowLine($sizes, $row);
 
             // Skip the divider for the remaining rows.

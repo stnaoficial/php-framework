@@ -12,8 +12,6 @@ if (!function_exists('wrap')) {
      */
     function wrap($value)
     {
-        $wrapper = new \Oraculum\Wrapper\Wrapper($value);
-
-        return $wrapper;
+        return new \Oraculum\Wrapper\Wrapper($value);
     }
 }

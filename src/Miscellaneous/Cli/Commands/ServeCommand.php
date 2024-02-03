@@ -3,11 +3,12 @@
 namespace Miscellaneous\Cli\Commands;
 
 use Oraculum\Cli\Abstracts\Command;
+use Oraculum\Cli\Components\Panel;
 use Oraculum\Cli\Console;
 use Oraculum\Cli\Process;
 use Oraculum\Cli\Request;
-use Oraculum\FileSystem\File;
-use UnexpectedValueException;
+use Oraculum\Cli\Support\Ansi as AnsiSupport;
+use Oraculum\Support\Performance;
 
 final class ServeCommand extends Command
 {
@@ -26,59 +27,75 @@ final class ServeCommand extends Command
     protected $description = "Starts an development server specified by [--host=0.0.0.0], [--port=80] and [--output-logs].";
 
     /**
-     * Handle the command.
+     * Creates a new instance of the class.
      * 
      * @return void
      */
-    protected function handle()
+    public function __construct()
     {
-        $console = new Console;
+        $this->registerHandler();
+    }
 
-        $request = Request::fromCapture();
+    /**
+     * Registers the command handler.
+     * 
+     * @return void
+     */
+    private function registerHandler()
+    {
+        $this->setHandler(function(Console $console, Request $request) {
+            Performance::start();
 
-        $host = $request->hasOption("host")? $request->getOption("host") : "0.0.0.0";
-        $port = $request->hasOption("port")? $request->getOption("port") : "80";
+            $host = $request->hasOption("host")? $request->getOption("host") : "0.0.0.0";
+            $port = $request->hasOption("port")? $request->getOption("port") : "80";
 
-        $hostAndPort = $host . ':' . $port;
+            $hostAndPort = $host . ':' . $port;
 
-        $file = new File(__SOURCE_DIR__ . "/Oraculum/Http/server.php");
+            $process = new Process([PHP_BINARY, "-S", $hostAndPort, __SOURCE_DIR__ . "/Miscellaneous/Http/resources/server.php"]);
 
-        if (!$file->exists()) {
-            throw new UnexpectedValueException(sprintf(
-                "File [%s] does not exist.", $file->getFilename()
-            ));
-        }
+            $process->setHandler(function ($pipe, $line) use ($request, $console, $hostAndPort) {
+                // It verifies if the current PHP output line contains the "Permission denied"
+                // message and writes an error message.
+                if (str_contains($line, "Permission denied")) {
+                    $console->writeLine(sprintf(
+                        "Failed to listen on %s. Permission denied.", $hostAndPort
+                    ));
+                }
 
-        $process = new Process([PHP_BINARY, "-S", $hostAndPort, $file->getFilename()]);
+                // It verifies if the current PHP output line contains the "Development Server"
+                // message and masks it to the command format.
+                else if (str_contains($line, "Development Server")) {
+                    $console->writeLine(sprintf(
+                        "Development server started at http://%s in %.10f milliseconds.", $hostAndPort, Performance::end()
+                    ), 2);
 
-        $process->setHandler(function ($pipe, $line) use ($request, $console, $hostAndPort) {
-            // It verifies if the current PHP output line contains the "Permission denied" message
-            // and masks it to the command format.
-            if (str_contains($line, "Permission denied")) {
-                $console->writeLine(sprintf("Failed to listen on %s. Permission denied.", $hostAndPort));
-                return;
-            }
+                    $panel = new Panel(theme: 'single');
 
-            // It verifies if the current PHP output line contains the "Development Server" message
-            // and masks it to the command format.
-            else if (str_contains($line, "Development Server")) {
-                $console->writeLine(sprintf("Development server started at http://%s.", $hostAndPort));
-                
-                // Show an message of waiting for requests if output-logs is set.
-                // Allow the user to know that the output is anabled.
-                $request->hasOption('output-logs')
-                ? $console->writeLine("Waiting for requests...")
-                : null;
-            }
+                    $panel->line(AnsiSupport::format("Notice", AnsiSupport::DECORATION_BOLD), 2);
 
-            // Outputs the standard PHP output if the output-logs is set.
-            else if ($request->hasOption('output-logs')) {
-                $console->write($line);
-            }
+                    $panel->line("Remember to anable the [--output-logs] option if you want", 1);
+                    $panel->line("to see the PHP standard output.", 1);
+
+                    $console->writeLine($panel, 2);
+
+                    $console->writeLine("Press Ctrl+C to stop.", 2);
+                    
+                    // Show an message of waiting for requests if output-logs is set.
+                    // Allow the user to know that the output is anabled.
+                    if ($request->hasOption('output-logs')) {
+                        $console->writeLine("Waiting for requests...", 2);
+                    }
+                }
+
+                // Outputs the standard PHP output if the output-logs is set.
+                else if ($request->hasOption('output-logs')) {
+                    $console->write($line);
+                }
+            });
+
+            $process->run(
+                Process::SKIP_OUTPUT_PIPE | Process::UNBLOCK_OUTPUT_STREAM
+            );
         });
-
-        $process->run(
-            Process::SKIP_OUTPUT_PIPE | Process::UNBLOCK_OUTPUT_STREAM
-        );
     }
 }
