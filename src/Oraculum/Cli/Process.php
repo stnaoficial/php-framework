@@ -141,6 +141,16 @@ final class Process extends PrimitiveObject
     }
 
     /**
+     * Determine if the process is ready.
+     * 
+     * @return bool Returns `true` if the process is ready, `false` otherwise.
+     */
+    public function isReady()
+    {
+        return is_resource($this->resource);
+    }
+
+    /**
      * Determine if the process is running.
      * 
      * @return bool Returns `true` if the process is running, `false` otherwise.
@@ -302,8 +312,8 @@ final class Process extends PrimitiveObject
             if ($flags & ~self::SKIP_ERROR_PIPE) {
                 $this->process(2, $flags);
             }
-            
-        } while(is_resource($this->resource) && $this->isRunning());
+
+        } while($this->isReady() && $this->isRunning());
 
         if ($this->tty) {
             return true;
@@ -325,7 +335,7 @@ final class Process extends PrimitiveObject
             is_resource($pipe) && fclose($pipe);
         }
 
-        if (!is_resource($this->resource)) {
+        if (!$this->isReady()) {
             return false;
         }
 
@@ -335,7 +345,7 @@ final class Process extends PrimitiveObject
             call_user_func('posix_kill', $this->getParentPid(), SIGTERM);
         }
 
-        if (-1 === $status = proc_close($this->resource) && is_resource($this->resource)) {
+        if (-1 === $status = proc_close($this->resource) && $this->isReady()) {
             throw new UnexpectedValueException(
                 "Unable to terminate process."
             );

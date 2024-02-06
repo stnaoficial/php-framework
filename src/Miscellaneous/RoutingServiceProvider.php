@@ -8,6 +8,7 @@ use Oraculum\Http\Contracts\Communicable;
 use Oraculum\Http\Request;
 use Oraculum\Http\Router;
 use Oraculum\Support\Environment as EnvironmentSupport;
+use Oraculum\Support\Value as ValueSupport;
 
 final class RoutingServiceProvider extends ServiceProvider
 {
@@ -79,12 +80,12 @@ final class RoutingServiceProvider extends ServiceProvider
 
         $route = $this->router->handleRequest($request);
 
-        $handle = $this->container->call($route->getHandler(), $request->getParameters());
+        $return = $this->container->call($route->getHandler(), $request->getParameters());
 
-        if (!$handle instanceof Communicable) {
+        if (!$return instanceof Communicable) {
             return;
         }
 
-        $handle->send();
+        $return->send();
     }
 }

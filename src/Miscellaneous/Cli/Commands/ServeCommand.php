@@ -79,7 +79,7 @@ final class ServeCommand extends Command
                     $console->writeLine($panel, 2);
 
                     $console->writeLine("Press Ctrl+C to stop.", 2);
-                    
+
                     // Show an message of waiting for requests if output-logs is set.
                     // Allow the user to know that the output is anabled.
                     if ($request->hasOption('output-logs')) {

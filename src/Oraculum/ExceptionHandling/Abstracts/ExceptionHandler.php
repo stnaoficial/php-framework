@@ -12,16 +12,6 @@ abstract class ExceptionHandler extends PrimitiveObject
     use GloballyAvailable;
 
     /**
-     * Creates a new instance of the class.
-     * 
-     * @return void
-     */
-    public function __construct()
-    {
-        $this->setInstance($this);
-    }
-
-    /**
      * Gets an error exception from the given arguments.
      * 
      * @param int         $code     The error code.

@@ -2,9 +2,10 @@
 
 namespace Miscellaneous;
 
-use BadMethodCallException;
 use InvalidArgumentException;
 use Miscellaneous\Abstracts\ServiceProvider;
+use Miscellaneous\Alias\Network as AliasNetwork;
+use Oraculum\FileSystem\File;
 use Oraculum\Support\Primitives\PrimitiveObject;
 use Oraculum\Support\Traits\GloballyAvailable;
 use Oraculum\Support\Traits\NonInstantiable;
@@ -12,11 +13,6 @@ use Oraculum\Support\Traits\NonInstantiable;
 final class Kernel extends PrimitiveObject
 {
     use NonInstantiable, GloballyAvailable;
-
-    /**
-     * @var array<string, array{value: mixed, overwrite: bool}> The aliases network.
-     */
-    private $aliases = [];
 
     /**
      * @var array<class-string<ServiceProvider>, ServiceProvider> The service providers.
@@ -35,7 +31,7 @@ final class Kernel extends PrimitiveObject
      */
     private function __construct()
     {
-        $this->registerBaseAliases();
+        $this->registerBaseAliasNetwork();
         $this->registerBaseServices();
     }
 
@@ -73,95 +69,54 @@ final class Kernel extends PrimitiveObject
     }
 
     /**
-     * Determines if an alias exists.
+     * Setup the given alias.
      * 
-     * @param string $name The alias name.
-     * 
-     * @return bool Returns `true` if the alias exists, `false` otherwise.
-     */
-    private function hasAlias($name)
-    {
-        return isset($this->aliases[$name]);
-    }
-
-    /**
-     * Gets an alias.
-     * 
-     * @template TValue
-     * 
-     * @param string $name The alias name.
-     * 
-     * @throws InvalidArgumentException If the alias does not exist.
-     * 
-     * @return TValue The alias value.
-     */
-    private function getAlias($name)
-    {
-        if (!$this->hasAlias($name)) {
-            throw new InvalidArgumentException(sprintf(
-                "Alias [%s] does not exist.", $name
-            ));
-        }
-
-        return $this->aliases[$name]['value'];
-    }
-
-    /**
-     * Sets an alias.
-     * 
-     * @template TValue
-     * 
-     * @param string $name The alias name.
-     * @param TValue $value The alias value.
-     * @param bool   $overwrite Determines whether the alias can be overwritten.
-     * 
-     * @throws BadMethodCallException If the alias cannot be overwritten.
+     * @param \Oraculum\Alias\Alias $alias The alias to setup.
      * 
      * @return void
      */
-    private function setAlias($name, $value, $overwrite = true)
+    private function setupAlias($alias)
     {
-        if (!$this->hasAlias($name)) {
-            $this->aliases[$name] = compact('name', 'value', 'overwrite');
-            return;
+        switch ($alias->getName()) {
+            case 'mode':
+                in_array($alias->getValue(), ["dev", "develop", "development"]) && $this->showErrors();
+                break;
+            case 'boot.files':
+                foreach ($alias->getValue() as $filename) {
+                    require_once $filename;
+                }
+                break;
+            default:
+                break;
         }
-
-        $alias = $this->aliases[$name];
-
-        if (!$alias["overwrite"]) {
-            throw new BadMethodCallException(sprintf(
-                "Alias [%s] cannot be overwritten.", $name
-            ));
-        }
-
-        $alias["value"] = $value;
-
-        $this->aliases[$name] = $alias;
     }
 
     /**
-     * Gets or sets an alias.
+     * Setup the registered aliases.
      * 
-     * @template TValue
-     * 
-     * @param string      $name The alias name.
-     * @param TValue|null $value The alias value.
-     * @param bool        $overwrite Determines whether the alias can be overwritten.
-     * 
-     * @throws InvalidArgumentException If the alias does not exist.
-     * @throws BadMethodCallException   If the alias cannot be overwritten.
-     * 
-     * @return TValue The alias value.
+     * @return void
      */
-    public function alias($name, $value = null, $overwrite = true)
+    private function setupAliases()
     {
-        if (is_null($value)) {
-            return $this->getAlias($name);
+        foreach (AliasNetwork::getInstance()->getAliases() as $alias) {
+            $this->setupAlias($alias);
         }
+    }
 
-        $this->setAlias($name, $value, $overwrite);
+    /**
+     * Registers the base alias network.
+     * 
+     * @throws InvalidArgumentException If some alias is not valid.
+     * 
+     * @return void
+     */
+    private function registerBaseAliasNetwork()
+    {
+        $file = new File(__DIR__ . "/resources/aliases.php");
 
-        return $value;
+        // Changes the global alias network instance.
+        // This makes the remaining aliases work as expected.
+        AliasNetwork::setInstance(AliasNetwork::fromFile($file));
     }
 
     /**
@@ -243,23 +198,6 @@ final class Kernel extends PrimitiveObject
     }
 
     /**
-     * Registers the base aliases.
-     * 
-     * @return void
-     */
-    private function registerBaseAliases()
-    {
-        // Kernel release aliases (should not be overwritten by the user)
-        $this->setAlias("release.version", "1.0.0", false);
-        $this->setAlias("release.name", "Alpine", false);
-        $this->setAlias("release.year", "2024", false);
-
-        // Kernel internal aliases (could be overwritten by the user)
-        // Provides a more convenient way to work with the kernel during development.
-        $this->setAlias("mode", "production");
-    }
-
-    /**
      * Registers the base services.
      * 
      * @return void
@@ -270,41 +208,6 @@ final class Kernel extends PrimitiveObject
         // Provides the basic functionalities of the kernel.
         $this->setService(new ExceptionHandlingServiceProvider);
         $this->setService(new RoutingServiceProvider);
-    }
-
-    /**
-     * Setup the given alias.
-     * 
-     * @param array $alias The alias to setup.
-     * 
-     * @return void
-     */
-    private function setupAlias($alias)
-    {
-        switch ($alias['name']) {
-            case 'mode':
-                in_array($alias["value"], ["dev", "develop", "development"]) && $this->showErrors();
-                break;
-            case 'boot.files':
-                foreach ($alias["value"] as $filename) {
-                    require_once $filename;
-                }
-                break;
-            default:
-                break;
-        }
-    }
-
-    /**
-     * Setup the registered aliases.
-     * 
-     * @return void
-     */
-    private function setupAliases()
-    {
-        foreach ($this->aliases as $name => $alias) {
-            $this->setupAlias($alias);
-        }
     }
 
     /**

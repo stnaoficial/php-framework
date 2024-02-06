@@ -39,3 +39,6 @@ foreach ($dependencies as $dependency) {
 }
 
 $autoloder->autoload();
+
+// Sets the instance as global.
+\Oraculum\Autoloader\Autoloader::setInstance($autoloder);

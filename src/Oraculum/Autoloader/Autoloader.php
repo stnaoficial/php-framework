@@ -65,8 +65,6 @@ final class Autoloader extends PrimitiveObject
                 "File %s does not exist.", $this->file->getFilename()
             ));
         }
-
-        $this->setInstance($this);
     }
 
     /**

@@ -11,6 +11,11 @@ use Oraculum\FileSystem\Abstracts\File as AbstractFile;
 class File extends AbstractFile
 {
     /**
+     * @var array<string, mixed> The variables to pass to the file.
+     */
+    private $vars = [];
+
+    /**
      * Gets the size of the file.
      * 
      * @return false|int Returns the size of the file, or `false` on failure.
@@ -81,13 +86,13 @@ class File extends AbstractFile
     {
         $dir = dirname($this->filename);
 
+        // Creats the directory if it doesn't exist.
+        // It performs recursive creation if needed.
         if (!is_dir($dir)) {
             mkdir($dir, recursive: true);
         }
 
-        return file_put_contents($this->filename, $data,
-            FILE_APPEND | LOCK_EX
-        );
+        return file_put_contents($this->filename, $data, FILE_APPEND | LOCK_EX);
     }
 
     /**
@@ -100,7 +105,7 @@ class File extends AbstractFile
         if (!is_writable($this->filename)) {
             return false;
         }
-        
+
         $stream = fopen($this->filename, 'w');
 
         $cleared = true;
@@ -125,8 +130,15 @@ class File extends AbstractFile
      */
     public function overwrite($data)
     {
-        $this->clear();
-        return $this->write($data);
+        $dir = dirname($this->filename);
+
+        // Creats the directory if it doesn't exist.
+        // It performs recursive creation if needed.
+        if (!is_dir($dir)) {
+            mkdir($dir, recursive: true);
+        }
+
+        return file_put_contents($this->filename, $data, LOCK_EX);
     }
 
     /**
@@ -144,16 +156,33 @@ class File extends AbstractFile
     }
 
     /**
-     * Requires the file with the given variables.
+     * Sets the variables to pass to the file.
      * 
      * @param array $vars The variables to pass to the file.
      * 
-     * @return TData Returns the contents of the file.
+     * @return void
      */
-    public function require($vars = [])
+    public function with($vars = [])
     {
-        extract($vars);
+        $this->vars = $vars;
+    }
 
-        return require($this->filename);
+    /**
+     * Requires the file.
+     * 
+     * @param bool $return Whether to return the contents of the file.
+     * 
+     * @return TData|void Returns the contents of the file or `void` if `$return` is set to `false`.
+     */
+    public function require($return = true)
+    {
+        extract($this->vars);
+
+        if (!$return) {
+            require($this->filename);
+
+        } else {
+            return require($this->filename);
+        }
     }
 }

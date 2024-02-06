@@ -4,12 +4,12 @@ if (!function_exists('response')) {
     /**
      * Creates an HTTP response.
      * 
-     * @param mixed $media The media of the response.
+     * @param \Oraculum\Http\Content|string|null $content The content of the response.
      * 
      * @return \Miscellaneous\Http\Response Returns the HTTP response.
      */
-    function response($media = null)
+    function response($content = null)
     {
-        return \Miscellaneous\Http\Response::fromMedia($media);
+        return new \Miscellaneous\Http\Response($content);
     }
 }

@@ -41,9 +41,8 @@ final class Header extends BaseHeader implements FromFile, FromJson, FromMedia
     {
         if (is_array($json)) {
             $json = Json::fromArray($json);
-        }
-
-        if (is_string($json)) {
+        
+        } else if (is_string($json)) {
             $json = new Json($json);
         }
 

@@ -2,6 +2,7 @@
     "version": "8.3.1",
     "require": [
         "/src/Miscellaneous/Http/helpers.php",
+        "/src/Miscellaneous/Alias/helpers.php",
         "/src/Miscellaneous/helpers.php",
         "/src/Oraculum/Container/helpers.php",
         "/src/Oraculum/Http/helpers.php",
