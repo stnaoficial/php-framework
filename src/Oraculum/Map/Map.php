@@ -10,7 +10,7 @@ use Oraculum\Support\Arr as ArraySupport;
 use Oraculum\Support\Primitives\PrimitiveObject;
 
 /**
- * @template TKey
+ * @template TKey of array-key
  * @template TValue
  * @implements Iterator<TKey, TValue>
  * @implements ArrayAccess<TKey, TValue>

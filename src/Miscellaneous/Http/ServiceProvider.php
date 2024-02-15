@@ -1,16 +1,15 @@
 <?php
 
-namespace Miscellaneous;
+namespace Miscellaneous\Http;
 
-use Miscellaneous\Abstracts\ServiceProvider;
+use Miscellaneous\Abstracts\ServiceProvider as BaseServiceProvider;
 use Oraculum\Container\Container;
 use Oraculum\Http\Contracts\Communicable;
 use Oraculum\Http\Request;
 use Oraculum\Http\Router;
 use Oraculum\Support\Environment as EnvironmentSupport;
-use Oraculum\Support\Value as ValueSupport;
 
-final class RoutingServiceProvider extends ServiceProvider
+final class ServiceProvider extends BaseServiceProvider
 {
     /**
      * The container instance.
@@ -45,7 +44,7 @@ final class RoutingServiceProvider extends ServiceProvider
     private function initialize()
     {
         $this->container = Container::getInstance();
-        $this->router    = Router::getInstance();
+        $this->router = Router::getInstance();
     }
 
     /**

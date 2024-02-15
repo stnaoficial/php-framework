@@ -5,6 +5,7 @@
         "/src/Miscellaneous/Alias/helpers.php",
         "/src/Miscellaneous/helpers.php",
         "/src/Oraculum/Container/helpers.php",
+        "/src/Oraculum/Html/helpers.php",
         "/src/Oraculum/Http/helpers.php",
         "/src/Oraculum/Hydration/helpers.php",
         "/src/Oraculum/Wrapper/helpers.php",

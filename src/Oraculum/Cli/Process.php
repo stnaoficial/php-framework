@@ -10,17 +10,17 @@ final class Process extends PrimitiveObject
     /**
      * @var int Determine if the output stream should be unblocked.
      */
-    const UNBLOCK_OUTPUT_STREAM = 0;
+    public const UNBLOCK_OUTPUT_STREAM = 0;
 
     /**
      * @var int Determine if the output stream should be skipped.
      */
-    const SKIP_OUTPUT_PIPE = 1;
+    public const SKIP_OUTPUT_PIPE = 1;
 
     /**
      * @var int Determine if the error stream should be skipped.
      */
-    const SKIP_ERROR_PIPE = 2;
+    public const SKIP_ERROR_PIPE = 2;
 
     /**
      * @var array The command to execute.

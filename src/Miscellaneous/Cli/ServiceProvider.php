@@ -1,14 +1,14 @@
 <?php
 
-namespace Miscellaneous;
+namespace Miscellaneous\Cli;
 
-use Miscellaneous\Abstracts\ServiceProvider;
+use Miscellaneous\Abstracts\ServiceProvider as BaseServiceProvider;
 use Oraculum\Cli\Console;
 use Oraculum\Cli\Request;
 use Oraculum\Container\Container;
 use Oraculum\Support\Environment as EnvironmentSupport;
 
-class ConsoleServiceProvider extends ServiceProvider
+class ServiceProvider extends BaseServiceProvider
 {
     /**
      * The container instance.
@@ -54,9 +54,9 @@ class ConsoleServiceProvider extends ServiceProvider
      */
     private function registerCommands()
     {
-        $this->console->setCommand(new Cli\Commands\ServeCommand);
-        $this->console->setCommand(new Cli\Commands\WriteCommand);
-        $this->console->setCommand(new Cli\Commands\CreateClassCommand);
+        $this->console->setCommand(new Commands\ServeCommand);
+        $this->console->setCommand(new Commands\WriteCommand);
+        $this->console->setCommand(new Commands\CreateClassCommand);
     }
 
     /**

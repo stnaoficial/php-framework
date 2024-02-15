@@ -2,26 +2,25 @@
 
 namespace Miscellaneous\Http;
 
-use Oraculum\Contracts\FromMedia;
-use Oraculum\Contracts\Media;
+use Miscellaneous\Contracts\FromAny;
 use Oraculum\FileSystem\File;
 use Oraculum\Http\Content as BaseContent;
 
-final class Content extends BaseContent implements FromMedia
+final class Content extends BaseContent implements FromAny
 {
     /**
-     * Creates a new instance from an media.
+     * Creates a new instance from any data type.
      * 
-     * @param Media $media The media to create the instance.
+     * @param mixed $data The data to create the instance.
      * 
      * @return self The new instance.
      */
-    public static function fromMedia($media)
+    public static function fromAny($data)
     {
-        if ($media instanceof File) {
-            return new self(Header::fromFile($media), $media->read() ?: '');
+        if ($data instanceof File) {
+            return new self(Header::fromFile($data), $data->read() ?: '');
         }
 
-        return new self(Header::fromMedia($media), $media);
+        return new self(Header::fromAny($data), $data);
     }
 }

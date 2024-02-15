@@ -2,8 +2,7 @@
 
 namespace Miscellaneous\Http;
 
-use Oraculum\Contracts\FromMedia;
-use Oraculum\Contracts\Media;
+use Miscellaneous\Contracts\FromAny;
 use Oraculum\FileSystem\Contracts\FromFile;
 use Oraculum\FileSystem\File;
 use Oraculum\Http\Header as BaseHeader;
@@ -11,7 +10,7 @@ use Oraculum\FileSystem\Support\MimeType as MimeTypeSupport;
 use Oraculum\Json\Contracts\FromJson;
 use Oraculum\Json\Json;
 
-final class Header extends BaseHeader implements FromFile, FromJson, FromMedia
+final class Header extends BaseHeader implements FromFile, FromJson, FromAny
 {
     /**
      * Creates a new instance from an file.
@@ -55,20 +54,20 @@ final class Header extends BaseHeader implements FromFile, FromJson, FromMedia
     }
 
     /**
-     * Creates a new instance from an media.
-     *
-     * @param Media $media The media to create the instance.
-     *
+     * Creates a new instance from any data type.
+     * 
+     * @param mixed $data The data to create the instance.
+     * 
      * @return self The new instance.
      */
-    public static function fromMedia($media)
+    public static function fromAny($data)
     {
-        if ($media instanceof File) {
-            return self::fromFile($media);
+        if ($data instanceof File) {
+            return self::fromFile($data);
         }
 
-        if ($media instanceof Json) {
-            return self::fromJson($media);
+        if ($data instanceof Json) {
+            return self::fromJson($data);
         }
 
         return self::empty();

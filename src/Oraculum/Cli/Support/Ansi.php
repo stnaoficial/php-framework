@@ -9,44 +9,44 @@ final class Ansi
 {
     use NonInstantiable;
 
-    const DECORATION_BOLD           = 1;
-    const DECORATION_ITALIC         = 2;
-    const DECORATION_UNDERLINE      = 4;
-    const DECORATION_STRIKETHROUGH  = 8;
+    public const DECORATION_BOLD           = 1;
+    public const DECORATION_ITALIC         = 2;
+    public const DECORATION_UNDERLINE      = 4;
+    public const DECORATION_STRIKETHROUGH  = 8;
 
-    const FOREGROUND_BLACK          = 16;
-    const FOREGROUND_RED            = 32;
-    const FOREGROUND_GREEN          = 64;
-    const FOREGROUND_YELLOW         = 128;
-    const FOREGROUND_BLUE           = 256;
-    const FOREGROUND_MAGENTA        = 512;
-    const FOREGROUND_CYAN           = 1024;
-    const FOREGROUND_WHITE          = 2048;
-    const FOREGROUND_BRIGHT_BLACK   = 4096;
-    const FOREGROUND_BRIGHT_RED     = 8192;
-    const FOREGROUND_BRIGHT_GREEN   = 16384;
-    const FOREGROUND_BRIGHT_YELLOW  = 32768;
-    const FOREGROUND_BRIGHT_BLUE    = 65536;
-    const FOREGROUND_BRIGHT_MAGENTA = 131072;
-    const FOREGROUND_BRIGHT_CYAN    = 262144;
-    const FOREGROUND_BRIGHT_WHITE   = 524288;
+    public const FOREGROUND_BLACK          = 16;
+    public const FOREGROUND_RED            = 32;
+    public const FOREGROUND_GREEN          = 64;
+    public const FOREGROUND_YELLOW         = 128;
+    public const FOREGROUND_BLUE           = 256;
+    public const FOREGROUND_MAGENTA        = 512;
+    public const FOREGROUND_CYAN           = 1024;
+    public const FOREGROUND_WHITE          = 2048;
+    public const FOREGROUND_BRIGHT_BLACK   = 4096;
+    public const FOREGROUND_BRIGHT_RED     = 8192;
+    public const FOREGROUND_BRIGHT_GREEN   = 16384;
+    public const FOREGROUND_BRIGHT_YELLOW  = 32768;
+    public const FOREGROUND_BRIGHT_BLUE    = 65536;
+    public const FOREGROUND_BRIGHT_MAGENTA = 131072;
+    public const FOREGROUND_BRIGHT_CYAN    = 262144;
+    public const FOREGROUND_BRIGHT_WHITE   = 524288;
 
-    const BACKGROUND_BLACK          = 1048576;
-    const BACKGROUND_RED            = 2097152;
-    const BACKGROUND_GREEN          = 4194304;
-    const BACKGROUND_YELLOW         = 8388608;
-    const BACKGROUND_BLUE           = 16777216;
-    const BACKGROUND_MAGENTA        = 33554432;
-    const BACKGROUND_CYAN           = 67108864;
-    const BACKGROUND_WHITE          = 134217728;
-    const BACKGROUND_BRIGHT_BLACK   = 268435456;
-    const BACKGROUND_BRIGHT_RED     = 536870912;
-    const BACKGROUND_BRIGHT_GREEN   = 1073741824;
-    const BACKGROUND_BRIGHT_YELLOW  = 2147483648;
-    const BACKGROUND_BRIGHT_BLUE    = 4294967296;
-    const BACKGROUND_BRIGHT_MAGENTA = 8589934592;
-    const BACKGROUND_BRIGHT_CYAN    = 17179869184;
-    const BACKGROUND_BRIGHT_WHITE   = 34359738368;
+    public const BACKGROUND_BLACK          = 1048576;
+    public const BACKGROUND_RED            = 2097152;
+    public const BACKGROUND_GREEN          = 4194304;
+    public const BACKGROUND_YELLOW         = 8388608;
+    public const BACKGROUND_BLUE           = 16777216;
+    public const BACKGROUND_MAGENTA        = 33554432;
+    public const BACKGROUND_CYAN           = 67108864;
+    public const BACKGROUND_WHITE          = 134217728;
+    public const BACKGROUND_BRIGHT_BLACK   = 268435456;
+    public const BACKGROUND_BRIGHT_RED     = 536870912;
+    public const BACKGROUND_BRIGHT_GREEN   = 1073741824;
+    public const BACKGROUND_BRIGHT_YELLOW  = 2147483648;
+    public const BACKGROUND_BRIGHT_BLUE    = 4294967296;
+    public const BACKGROUND_BRIGHT_MAGENTA = 8589934592;
+    public const BACKGROUND_BRIGHT_CYAN    = 17179869184;
+    public const BACKGROUND_BRIGHT_WHITE   = 34359738368;
 
     /**
      * @var array<int, int> Defines the associated code for each flag.

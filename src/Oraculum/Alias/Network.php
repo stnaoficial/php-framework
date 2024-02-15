@@ -70,7 +70,7 @@ class Network extends PrimitiveObject
             ));
         }
 
-        return $this->aliases[$name]['value'];
+        return $this->aliases[$name]->getValue();
     }
 
     /**

@@ -1,11 +1,10 @@
 <?php
 
-namespace Miscellaneous;
+namespace Miscellaneous\ExceptionHandling;
 
-use Miscellaneous\Abstracts\ServiceProvider;
-use Miscellaneous\ExceptionHandling\ExceptionHandler;
+use Miscellaneous\Abstracts\ServiceProvider as BaseServiceProvider;
 
-final class ExceptionHandlingServiceProvider extends ServiceProvider
+final class ServiceProvider extends BaseServiceProvider
 {
     /**
      * @var ExceptionHandler The exception handler.

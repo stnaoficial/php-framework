@@ -4,12 +4,11 @@ namespace Oraculum\Json;
 
 use Oraculum\Contracts\Arrayable;
 use Oraculum\Contracts\FromArray;
-use Oraculum\Contracts\Media;
 use Oraculum\Contracts\Stringable;
 use Oraculum\Http\Exceptions\InvalidJsonException;
 use Oraculum\Support\Primitives\PrimitiveObject;
 
-final class Json extends PrimitiveObject implements Media, FromArray, Arrayable, Stringable
+final class Json extends PrimitiveObject implements FromArray, Arrayable, Stringable
 {
     /**
      * @var string The source of the JSON.

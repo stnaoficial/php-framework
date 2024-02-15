@@ -2,14 +2,13 @@
 
 namespace Oraculum\FileSystem\Abstracts;
 
-use Oraculum\Contracts\Media;
 use Oraculum\Contracts\Stringable;
 use Oraculum\Support\Primitives\PrimitiveObject;
 
 /**
  * @template TData
  */
-abstract class File extends PrimitiveObject implements Media, Stringable
+abstract class File extends PrimitiveObject implements Stringable
 {
     /**
      * The filename of the file

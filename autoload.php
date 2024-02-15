@@ -3,7 +3,6 @@
 $dependencies = [
     __DIR__ . '/src/Oraculum/Support/Primitives/PrimitiveObject.php',
 
-    __DIR__ . '/src/Oraculum/Contracts/Media.php',
     __DIR__ . '/src/Oraculum/Contracts/Stringable.php',
     __DIR__ . '/src/Oraculum/Contracts/FromArray.php',
     __DIR__ . '/src/Oraculum/Contracts/Arrayable.php',

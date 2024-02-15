@@ -9,6 +9,24 @@ final class Arr
     use NonInstantiable;
 
     /**
+     * Restore an item from an array.
+     * 
+     * @template TKey of array-key
+     * @template TValue
+     * 
+     * @param  array<Tkey, TValue> $items The items reference where the item will be restored.
+     * @param  TKey                $key   The key of the item to restore.
+     * 
+     * @return TValue The restored item.
+     */
+    public static function restore(&$items, $key)
+    {
+        $value = $items[$key] ?? null; unset($items[$key]);
+
+        return $value;
+    }
+
+    /**
      * Flatten items in a specified depth.
      *
      * @param  array $items The items to flatten.

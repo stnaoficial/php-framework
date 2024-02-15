@@ -14,7 +14,7 @@ final class Annotation
     /**
      * The regex pattern to parse doc comments.
      */
-    const DOC_COMMENT_PATTERN = "#(@[a-zA-Z]+\s*[a-zA-Z0-9, ()_].*)#";
+    private const DOC_COMMENT_PATTERN = "#(@[a-zA-Z]+\s*[a-zA-Z0-9, ()_].*)#";
 
     /**
      * Parse the doc comment into an associative array.

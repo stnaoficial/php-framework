@@ -1,57 +1,40 @@
 <?php
 
-namespace Oraculum\Html;
+namespace Oraculum\Html\Abstracts;
 
 use Oraculum\Contracts\Stringable;
 use Oraculum\Html\Contracts\Htmlable;
 use Oraculum\Support\Arr as ArraySupport;
 use Oraculum\Support\Primitives\PrimitiveObject;
 
-class Element extends PrimitiveObject implements Htmlable, Stringable
+abstract class Component extends PrimitiveObject implements Htmlable, Stringable
 {
     /**
-     * @var string The name of the element.
+     * @var array The attributes of the component.
      */
-    private $name;
+    protected $attributes;
 
     /**
-     * @var array The attributes of the element.
+     * @var array The children of the component.
      */
-    private $attributes;
-
-    /**
-     * @var array The children of the element.
-     */
-    private $children;
+    protected $children;
 
     /**
      * Creates a new instance of the class.
      * 
-     * @param string $name       The name of the element.
-     * @param array  $attributes The attributes of the element.
-     * @param array  $children   The children of the element.
+     * @param array  $attributes The attributes of the component.
+     * @param array  $children   The children of the component.
      * 
      * @return void
      */
-    public function __construct($name = 'div', $attributes = [], $children = [])
+    public function __construct($attributes = [], $children = [])
     {
-        $this->name       = $name;
-        $this->attributes = $attributes;
-        $this->children   = ArraySupport::flatten($children);
+        $this->attributes  = $attributes;
+        $this->children    = ArraySupport::flatten($children);
     }
 
     /**
-     * Gets the name of the element.
-     * 
-     * @return string The name of the element.
-     */
-    public function getName()
-    {
-        return $this->name;
-    }
-
-    /**
-     * Sets the attribute of the element.
+     * Sets the attribute of the component.
      * 
      * @param string $name  The name of the attribute.
      * @param mixed  $value The value of the attribute.
@@ -64,7 +47,7 @@ class Element extends PrimitiveObject implements Htmlable, Stringable
     }
 
     /**
-     * Gets the attribute of the element.
+     * Gets the attribute of the component.
      * 
      * @param string $name The name of the attribute.
      * 
@@ -76,9 +59,9 @@ class Element extends PrimitiveObject implements Htmlable, Stringable
     }
 
     /**
-     * Gets the attributes of the element.
+     * Gets the attributes of the component.
      * 
-     * @return array The attributes of the element.
+     * @return array The attributes of the component.
      */
     public function getAttributes()
     {
@@ -86,7 +69,7 @@ class Element extends PrimitiveObject implements Htmlable, Stringable
     }
 
     /**
-     * Appends a child to the element.
+     * Appends a child to the component.
      * 
      * @param mixed $child The child to append.
      * 
@@ -98,14 +81,21 @@ class Element extends PrimitiveObject implements Htmlable, Stringable
     }
 
     /**
-     * Gets the children of the element.
+     * Gets the children of the component.
      * 
-     * @return array The children of the element.
+     * @return array The children of the component.
      */
     public function getChildren()
     {
         return $this->children;
     }
+
+    /**
+     * Defines the HTML component composition.
+     * 
+     * @return string Returns the HTML component composition.
+     */
+    protected abstract function compose();
 
     /**
      * Gets the HTML representation of the object.
@@ -114,7 +104,7 @@ class Element extends PrimitiveObject implements Htmlable, Stringable
      */
     public function toHtml()
     {
-        return Parser::new()->parseElement($this->name, $this->attributes, $this->children);
+        return $this->compose();
     }
 
     /**

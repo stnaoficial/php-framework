@@ -8,7 +8,7 @@ use Oraculum\Support\Primitives\PrimitiveObject;
 
 final class Stub extends PrimitiveObject
 {
-    const FIELD_MATCH_PATTERN = '/\{\{\s*([^}|\s]+)\s*\}\}/';
+    private const FIELD_MATCH_PATTERN = '/\{\{\s*([^}|\s]+)\s*\}\}/';
 
     /**
      * @var string The source of the stub.

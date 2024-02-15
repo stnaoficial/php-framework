@@ -2,14 +2,14 @@
 
 if (!function_exists('response')) {
     /**
-     * Creates an HTTP response.
+     * Creates an HTTP response from any data type.
      * 
-     * @param \Oraculum\Http\Content|string|null $content The content of the response.
+     * @param mixed $data The data type to create the HTTP response.
      * 
      * @return \Miscellaneous\Http\Response Returns the HTTP response.
      */
-    function response($content = null)
+    function response($data = null)
     {
-        return new \Miscellaneous\Http\Response($content);
+        return \Miscellaneous\Http\Response::fromAny($data);
     }
 }

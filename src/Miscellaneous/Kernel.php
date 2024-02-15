@@ -206,8 +206,8 @@ final class Kernel extends PrimitiveObject
     {
         // Base services (should not be overwritten by the user)
         // Provides the basic functionalities of the kernel.
-        $this->setService(new ExceptionHandlingServiceProvider);
-        $this->setService(new RoutingServiceProvider);
+        $this->setService(new ExceptionHandling\ServiceProvider);
+        $this->setService(new Http\ServiceProvider);
     }
 
     /**

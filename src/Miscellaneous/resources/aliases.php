@@ -1,9 +1,7 @@
 <?php
 
 return [
-    "mode" => [
-        "value" => "production"
-    ],
+    "mode" =>  "production",
     "release.version" => [
         "value"     => "1.0.0",
         "overwrite" => false

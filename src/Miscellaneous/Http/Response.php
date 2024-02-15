@@ -2,22 +2,21 @@
 
 namespace Miscellaneous\Http;
 
-use Oraculum\Contracts\FromMedia;
-use Oraculum\Contracts\Media;
+use Miscellaneous\Contracts\FromAny;
 use Oraculum\Http\Response as BaseResponse;
 
-final class Response extends BaseResponse implements FromMedia
+final class Response extends BaseResponse implements FromAny
 {
     /**
-     * Creates a new instance from an media.
-     *
-     * @param Media $media The media to create the instance.
-     *
+     * Creates a new instance from any data type.
+     * 
+     * @param mixed $data The data to create the instance.
+     * 
      * @return self The new instance.
      */
-    public static function fromMedia($media)
+    public static function fromAny($data)
     {
-        $content = Content::fromMedia($media);
+        $content = Content::fromAny($data);
 
         return new self($content);
     }
