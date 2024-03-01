@@ -2,45 +2,47 @@
 
 namespace Oraculum\Http;
 
-use Oraculum\Contracts\Arrayable;
-use Oraculum\Contracts\FromCapture;
-use Oraculum\Contracts\Emptyable;
+use Oraculum\Support\Contracts\Arrayable;
+use Oraculum\Support\Contracts\FromCapture;
+use Oraculum\Support\Contracts\Emptyable;
 use InvalidArgumentException;
-use Oraculum\Contracts\FromArray;
+use Oraculum\Support\Contracts\FromArray;
+use Oraculum\Support\Contracts\Stringable;
 use Oraculum\Http\Enums\StatusCode;
 use Oraculum\Http\Support\Header as HeaderSupport;
 use Oraculum\Http\Support\Server as ServerSupport;
 use Oraculum\Support\Primitives\PrimitiveObject;
 use Oraculum\Support\Traits\GloballyAvailable;
 
-class Header extends PrimitiveObject implements Emptyable, FromArray, FromCapture, Arrayable
+class Header extends PrimitiveObject implements Emptyable, FromArray, FromCapture, Arrayable, Stringable
 {
     use GloballyAvailable;
 
     /**
-     * @var array The HTTP headers.
-     */
-    private $headers;
-
-    /**
-     * @var StatusCode The HTTP status code.
+     * @var StatusCode $code The HTTP status code.
      */
     private $code;
 
     /**
+     * @var array $headers The HTTP headers.
+     */
+    private $headers = [];
+
+    /**
      * Creates a new instance of the class.
      * 
-     * @param array            $headers The HTTP headers to set.
      * @param StatusCode|int   $code    The HTTP status code.
+     * @param array            $headers The HTTP headers to set.
      * 
      * @throws InvalidArgumentException If the HTTP status code is invalid.
      * 
      * @return void
      */
-    public function __construct($headers = [], $code = StatusCode::OK)
+    public function __construct($code = StatusCode::OK, $headers = [])
     {
-        $this->headers = $headers;
         $this->code($code);
+
+        $this->headers = array_merge($this->headers, $headers);
     }
 
     /**
@@ -62,7 +64,7 @@ class Header extends PrimitiveObject implements Emptyable, FromArray, FromCaptur
      */
     public static function fromArray($array)
     {
-        return new self($array);
+        return new self(headers: $array);
     }
 
     /**
@@ -88,6 +90,39 @@ class Header extends PrimitiveObject implements Emptyable, FromArray, FromCaptur
     }
 
     /**
+	 * Gets a string representation of the object.
+     * 
+     * @return string Returns the `string` representation of the object.
+	 */
+	public function __toString(): string
+    {
+        // Sets the HTTP status code header as the first header.
+        // This is required by the HTTP specification.
+        $header = $this->codeHeader() . "\r\n";
+
+        // Concatenates all headers into a single string.
+        foreach ($this->headers as $name => $value) {
+            $header .= (is_string($name)? sprintf("%s: %s", $name, $value) : $value) . "\r\n";
+        }
+
+        // Puts one more empty line at the end.
+        // This is also required by the HTTP specification.
+        $header .= "\r\n";
+
+        return $header;
+    }
+
+    /**
+     * Gets a string representation of the object.
+     * 
+     * @return string Returns the `string` representation of the object.
+     */
+    public function toString()
+    {
+        return $this->__toString();
+    }
+
+    /**
      * Gets or sets the header HTTP status code.
      * 
      * @param StatusCode|int|null $code The HTTP status code.
@@ -98,21 +133,39 @@ class Header extends PrimitiveObject implements Emptyable, FromArray, FromCaptur
      */
     public function code($code = null)
     {
-        if (null === $code) {
+        // Just returns the current HTTP status code if no argument is passed.
+        // Thats the default behavior.
+        if (is_null($code)) {
             return $this->code;
         }
 
+        // Sets the HTTP status code as it is passed if it already implements an
+        // `StatusCode`.
         if ($code instanceof StatusCode) {
-            return $this->code = $code;
+            $this->code = $code;
         }
 
-        if (null === $code = StatusCode::tryFrom($code)) {
-            throw new InvalidArgumentException(sprintf(
-                "Invalid HTTP status code %s.", $code
-            ));
+        // Throws an exception if the HTTP status code is invalid and is not an
+        // implementation of `StatusCode`.
+        else {
+            if (null === $this->code = StatusCode::tryFrom($code)) {
+                throw new InvalidArgumentException(sprintf(
+                    "Invalid HTTP status code %s.", $code
+                ));
+            }
         }
 
-        return $this->code = $code;
+        return $this->code;
+    }
+
+    /**
+     * Gets the HTTP status code header.
+     * 
+     * @return string Returns the HTTP status code header.
+     */
+    private function codeHeader()
+    {
+        return sprintf("%s %s %s", ServerSupport::version(), $this->code->value, $this->code->message());
     }
 
     /**
@@ -153,15 +206,15 @@ class Header extends PrimitiveObject implements Emptyable, FromArray, FromCaptur
     }
 
     /**
-     * Remove previously set headers.
+     * Puts a header.
      * 
-     * @param string|null $name The name of the header to remove or `null` to remove all.
+     * @param string $value The value of the header.
      * 
      * @return void
      */
-    public function undo($name = null)
+    public function put($value)
     {
-        header_remove($name);
+        $this->headers[] = $value;
     }
 
     /**
@@ -169,20 +222,22 @@ class Header extends PrimitiveObject implements Emptyable, FromArray, FromCaptur
      * 
      * @param bool $replace If `true` the header will be replaced, otherwise it will be added.
      * 
-     * @return bool Returns `true` on success, `false` on failure.
+     * @return void
      */
     public function send($replace = true)
     {
-        $this->undo();
+        // Removes all existing headers.
+        // Prevents the old headers from being sent multiple times.
+        header_remove();
 
-        $this->headers[] = ServerSupport::protocol() . ' ' . $this->code->value . ' ' . $this->code->message();
-
+        // Sets the HTTP response code.
         http_response_code($this->code->value);
 
-        foreach ($this->headers as $name => $value) {
-            header($name . ': ' . $value, $replace, $this->code->value);
-        }
+        // Sends the HTTP status code header.
+        header($this->codeHeader());
 
-        return true;
+        foreach ($this->headers as $name => $value) {
+            header(is_string($name)? sprintf("%s: %s", $name, $value) : $value, $replace, $this->code->value);
+        }
     }
 }

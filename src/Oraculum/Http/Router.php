@@ -3,7 +3,6 @@
 namespace Oraculum\Http;
 
 use Oraculum\Http\Exceptions\InvalidRouteException;
-use Oraculum\Http\Support\Route as RouteSupport;
 use Oraculum\Support\Primitives\PrimitiveObject;
 use Oraculum\Support\Traits\GloballyAvailable;
 
@@ -12,110 +11,19 @@ final class Router extends PrimitiveObject
     use GloballyAvailable;
 
     /**
-     * @var \Oraculum\Http\Fallback|null The fallback route.
+     * @var Fallback|null $fallback The fallback route.
      */
     private $fallback = null;
 
     /**
-     * @var array<string, \Oraculum\Http\Route> The registered routes.
+     * @var array<string, Route> $routes The registered routes.
      */
-    private array $routes = [];
+    private $routes = [];
 
     /**
-     * Checks if the given route matches the given URI.
+     * Check if the router has a fallback route.
      * 
-     * @param Route $route The route to check.
-     * @param Uri   $uri   The URI to check.
-     * 
-     * @return bool Returns `true` if the route matches the URI, `false` otherwise.
-     */
-    private function match($route, $uri)
-    {
-        if ($route->getPattern() === $uri->toString()) {
-            return true;
-        }
-
-        $patternSegments = $route->getPatternSegments();
-
-        foreach ($uriSegments = $uri->getSegments() as $index => $segment) {
-            // Return false if there is no pattern related with the current
-            // URI segment.
-            if (empty($patternSegments[$index])) {
-                return false;
-            }
-            
-            $pattern = $patternSegments[$index];
-            
-            // Always return true if the pattern is a wildcard.
-            if ($pattern === '*') {
-                return true;
-            }
-            
-            // Continue if the pattern has a parameter.
-            // That means the URI segment is valid for any case.
-            if (RouteSupport::matchPatternParameter($pattern)) {
-                continue;
-            }
-            
-            // Return false if the URI segment does not match the pattern.
-            // That means the route does not match the URI.
-            if ($pattern !== $segment) {
-                return false;
-            }
-        }
-
-        if (count($patternSegments) !== count($uriSegments)) {
-            return false;
-        }
-
-        return true;
-    }
-
-    /**
-     * Resolves the route parameters from the given URI.
-     * 
-     * @param Route $route The route to fill.
-     * @param Uri   $uri   The URI to get the fields from.
-     * 
-     * @return array<int, string> The resolved route parameters.
-     */
-    private function resolve($route, $uri)
-    {
-        $segments = $uri->getSegments();
-
-        $params = [];
-
-        foreach ($route->getPatternSegments() as $index => $pattern) {
-            // Continue if there is no parameter to match.
-            if (false === $param = RouteSupport::matchPatternParameter($pattern)) {
-                continue;
-            }
-
-            $uriSegmentIsEmpty = empty($segments[$index]);
-            
-            // Throw an exception if the parameter is not optional and the URI
-            // segment is empty.
-            if (!$param['optional'] && $uriSegmentIsEmpty) {
-                throw new InvalidRouteException(sprintf(
-                    "Invalid URI %s. Missing route parameter [%s]", $uri->toString(), $param['name']
-                ));
-            }
-            
-            // Otherwise, continue if the URI segment is empty.
-            else if ($uriSegmentIsEmpty) {
-                continue;
-            }
-            
-            $params[$param['name']] = $segments[$index];
-        }
-
-        return $params;
-    }
-
-    /**
-     * Check if the Router has a fallback route.
-     * 
-     * @return bool Returns `true` if the Router has a fallback route, `false` otherwise.
+     * @return bool Returns `true` if the router has a fallback route, `false` otherwise.
      */
     public function hasFallback()
     {
@@ -125,7 +33,7 @@ final class Router extends PrimitiveObject
     /**
      * Get the fallback route.
      * 
-     * @return \Oraculum\Http\Fallback|null Return the fallback route if set, `null` otherwise.
+     * @return Fallback|null Return the fallback route if set, `null` otherwise.
      */
     public function getFallback()
     {
@@ -135,7 +43,7 @@ final class Router extends PrimitiveObject
     /**
      * Set the fallback route.
      * 
-     * @param \Oraculum\Http\Fallback $route The fallback route.
+     * @param Fallback $route The fallback route.
      * 
      * @return void
      */
@@ -145,16 +53,16 @@ final class Router extends PrimitiveObject
     }
 
     /**
-     * Gets an Route from the Router.
+     * Gets an route for the given URI.
      * 
-     * @param Uri|string $uri The Route URI to get.
+     * @param Uri|string $uri The URI to get the route from.
      * 
-     * @return \Oraculum\Http\Route|null Returns the Route if found, `null` otherwise.
+     * @return Route|null Returns the Route if found, `null` otherwise.
      */
-    public function getRoute($uri)
+    public function getRouteByUri($uri)
     {
         foreach ($this->routes as $route) {
-            if ($this->match($route, $uri)) {
+            if ($route->match($uri)) {
                 return $route;
             }
         }
@@ -163,9 +71,21 @@ final class Router extends PrimitiveObject
     }
 
     /**
-     * Register an Route in the Router.
+     * Gets an route by its pattern.
      * 
-     * @param \Oraculum\Http\Route $route The Route to register.
+     * @param string $pattern The route pattern.
+     * 
+     * @return Route|null Returns the Route if found, `null` otherwise.
+     */
+    public function getRouteByPattern($pattern)
+    {
+        return $this->routes[$pattern] ?? null;
+    }
+
+    /**
+     * Register an route in the router.
+     * 
+     * @param Route $route The route to register.
      * 
      * @return void
      */
@@ -175,28 +95,40 @@ final class Router extends PrimitiveObject
     }
 
     /**
-     * Handle the given request and returns the corresponding Route if available.
+     * Get all the registered routes.
+     * 
+     * @return array<string, Route> The registered routes.
+     */
+    public function getRoutes()
+    {
+        return $this->routes;
+    }
+
+    /**
+     * Handle the given request and returns the corresponding route if available.
      * 
      * @param Request $request The request to handle.
      * 
      * @throws InvalidRouteException If the request is invalid.
+     * @throws InvalidUriException   If the URI is invalid.
      * 
-     * @return \Oraculum\Http\Route|\Oraculum\Http\Fallback Returns the corresponding route.
+     * @return RouteFallback Returns the corresponding route.
      */
     public function handleRequest($request)
     {
         $uri = $request->uri();
 
-        if ($route = $this->getRoute($uri)) {
+        if ($route = $this->getRouteByUri($uri)) {
             if (!$request->isMethod(...$route->getMethods())) {
                 throw new InvalidRouteException(sprintf(
                     "Invalid route method %s", $request->getMethod()
                 ));
             }
-    
-            $params = $this->resolve($route, $uri);
-    
-            $request->putParameters($params);
+
+            // Puts the URI parameters associated with the route in the request.
+            // This allows the developer to access the route parameters directly
+            // from the request.
+            $request->putParameters($route->matches($uri));
 
         } else if ($this->hasFallback()) {
             $route = $this->getFallback();

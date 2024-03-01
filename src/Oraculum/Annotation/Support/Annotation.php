@@ -6,6 +6,7 @@ use Oraculum\Annotation\Exceptions\AnnotationException;
 use Oraculum\Support\Traits\NonInstantiable;
 use ReflectionClass;
 use ReflectionException;
+use ReflectionFunction;
 
 final class Annotation
 {
@@ -233,6 +234,57 @@ final class Annotation
     public static function getMethodAnnotation($class, $method, $name)
     {
         $annotations = self::getMethodAnnotations($class, $method);
+
+        return self::findOrFail($annotations, $name);
+    }
+
+    /**
+     * Get the function annotations.
+     * 
+     * @param object|string $function The function to get the annotations from.
+     * 
+     * @throws ReflectionException If the function does not exist.
+     * 
+     * @return array An associative array of the function annotations.
+     */
+    public static function getFunctionAnnotations($function)
+    {
+        $reflection = new ReflectionFunction($function);
+
+        return self::parseDocComment($reflection->getDocComment() ?: '');
+    }
+
+    /**
+     * Check if the function has an annotation.
+     * 
+     * @param object|string $function The function to get the annotations from.
+     * @param string        $name     The name of the annotation.
+     * 
+     * @throws ReflectionException If the function does not exist.
+     * 
+     * @return bool Returns `true` if the function has the annotation, `false` otherwise.
+     */
+    public static function hasFunctionAnnotation($function, $name)
+    {
+        $annotations = self::getFunctionAnnotations($function);
+
+        return isset($annotations[$name]);
+    }
+
+    /**
+     * Get the function annotation.
+     * 
+     * @param object|string $function The function to get the annotation from.
+     * @param string        $name     The name of the annotation.
+     * 
+     * @throws ReflectionException If the function does not exist.
+     * @throws AnnotationException If the annotation does not exist.
+     * 
+     * @return string The value of the annotation.
+     */
+    public static function getFunctionAnnotation($function, $name)
+    {
+        $annotations = self::getFunctionAnnotations($function);
 
         return self::findOrFail($annotations, $name);
     }

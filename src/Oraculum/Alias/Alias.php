@@ -4,7 +4,7 @@ namespace Oraculum\Alias;
 
 use BadMethodCallException;
 use InvalidArgumentException;
-use Oraculum\Contracts\FromArray;
+use Oraculum\Support\Contracts\FromArray;
 
 final class Alias implements FromArray
 {

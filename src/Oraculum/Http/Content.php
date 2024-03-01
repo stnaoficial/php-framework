@@ -2,32 +2,32 @@
 
 namespace Oraculum\Http;
 
-use Oraculum\Contracts\Emptyable;
+use Oraculum\Support\Contracts\Emptyable;
 use Oraculum\Support\Primitives\PrimitiveObject;
 
 class Content extends PrimitiveObject implements Emptyable
 {
     /**
-     * @var Header The HTTP header of the content.
+     * @var Header $header The HTTP header of the content.
      */
     private $header;
 
     /**
-     * @var string  The data of the content.
+     * @var string $data The data of the content.
      */
     private $data;
 
     /**
      * Creates a new instance of the class.
      *
-     * @param Header|array $header The HTTP header of the content.
-     * @param string       $data   The data of the content.
+     * @param Header $header The HTTP header of the content.
+     * @param string $data   The data of the content.
      *
      * @return void
      */
-    public function __construct($header = [], $data = '')
+    public function __construct($header, $data = '')
     {
-        $this->header = is_array($header)? Header::fromArray($header) : $header;
+        $this->header = $header;
         $this->data   = $data;
     }
 
@@ -38,7 +38,7 @@ class Content extends PrimitiveObject implements Emptyable
      */
     public static function empty()
     {
-        return new self;
+        return new self(Header::empty());
     }
 
     /**

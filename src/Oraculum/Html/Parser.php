@@ -19,7 +19,7 @@ final class Parser extends PrimitiveObject
      */
     public function parseAttributes($attributes)
     {
-        $html = '';
+        $html = "";
 
         foreach ($attributes as $key => $value) {
             if (is_null($value)) {
@@ -27,7 +27,7 @@ final class Parser extends PrimitiveObject
             }
 
             if (is_bool($value)) {
-                $html .= $value? " {$key}" : '';
+                $html .= $value? " {$key}" : "";
             
             } else {
                 $html .= " {$key}=\"{$value}\"";
@@ -48,7 +48,7 @@ final class Parser extends PrimitiveObject
      */
     public function parseChildren($children)
     {
-        $html = '';
+        $html = "";
 
         foreach ($children as $child) {
             if ($child instanceof Htmlable) {
@@ -70,7 +70,7 @@ final class Parser extends PrimitiveObject
      * 
      * @return string The HTML representation of the element.
      */
-    public function parseElement($name = 'div', $attributes = [], $children = [])
+    public function parseElement($name = "div", $attributes = [], $children = [])
     {
         $element = "<{$name}";
 
@@ -80,7 +80,7 @@ final class Parser extends PrimitiveObject
             return $element .= " />";
         }
 
-        $element .= '>';
+        $element .= ">";
 
         $element .= $this->parseChildren($children);
 

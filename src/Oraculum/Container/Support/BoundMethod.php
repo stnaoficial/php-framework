@@ -41,9 +41,9 @@ final class BoundMethod
                 "Invalid closure type."
             );
         }
-        
+
         $instance = $container->resolve($name);
-    
+
         return Closure::fromCallable([$instance, $method]);
     }
 }

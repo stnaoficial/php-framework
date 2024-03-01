@@ -38,11 +38,6 @@ final class Process extends PrimitiveObject
     private $cwd;
 
     /**
-     * @var Closure|string The process handler.
-     */
-    private $handler;
-
-    /**
      * @var bool Determine if the process is a TTY.
      */
     private $tty = false;
@@ -93,9 +88,7 @@ final class Process extends PrimitiveObject
     {
         $this->cmd = $cmd;
         $this->env = $env;
-
-        $this->cwd     = getcwd();
-        $this->handler = fn($type, $line) => print($line);
+        $this->cwd = getcwd();
     }
 
     /**
@@ -181,41 +174,6 @@ final class Process extends PrimitiveObject
     }
 
     /**
-     * Set the process handler.
-     * 
-     * @param Closure|string $handler The process handler.
-     * 
-     * @return void
-     */
-    public function setHandler($handler)
-    {
-        $this->handler = $handler;
-    }
-
-    /**
-     * Get the process handler.
-     * 
-     * @return Closure|string The process handler.
-     */
-    public function getHandler()
-    {
-        return $this->handler;
-    }
-
-    /**
-     * Handle output process pipes.
-     * 
-     * @param int    $type The pipe type.
-     * @param string $line The pipe output line.
-     * 
-     * @return void
-     */
-    private function handle($type, $line)
-    {
-        call_user_func($this->getHandler(), $type, $line);
-    }
-
-    /**
      * Get the output buffer.
      * 
      * @return string The output buffer.
@@ -248,12 +206,13 @@ final class Process extends PrimitiveObject
     /**
      * Process process pipes.
      * 
-     * @param int $pipe  The pipe type.
-     * @param int $flags The process flags.
+     * @param int            $pipe    The pipe type.
+     * @param Closure|string $handler The process handler.
+     * @param int            $flags   The process flags.
      * 
      * @return void
      */
-    private function process($pipe, $flags)
+    private function process($pipe, $handler, $flags = 0)
     {
         if (!isset($this->pipes[$pipe]) || !is_resource($this->pipes[$pipe])) {
             return;
@@ -278,17 +237,18 @@ final class Process extends PrimitiveObject
             2 => $this->errorBuffer .= $line,
         };
 
-        $this->handle($pipe, $line);
+        call_user_func($handler, $pipe, $line);
     }
 
     /**
      * Run the process.
      * 
-     * @param int $flags The process flags.
+     * @param Closure|string $handler The process handler.
+     * @param int            $flags   The process flags.
      * 
      * @return bool Returns `true` if the process was started successfully, `false` otherwise.
      */
-    public function run($flags = 0)
+    public function run($handler, $flags = 0)
     {
         if (!$this->resource = proc_open(
             $this->cmd,
@@ -306,11 +266,11 @@ final class Process extends PrimitiveObject
             $this->update();
 
             if ($flags & ~self::SKIP_OUTPUT_PIPE) {
-                $this->process(1, $flags);
+                $this->process(1, $handler, $flags);
             }
 
             if ($flags & ~self::SKIP_ERROR_PIPE) {
-                $this->process(2, $flags);
+                $this->process(2, $handler, $flags);
             }
 
         } while($this->isReady() && $this->isRunning());

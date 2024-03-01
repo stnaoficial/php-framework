@@ -3,7 +3,7 @@
 namespace Oraculum\Map;
 
 use Iterator;
-use Oraculum\Contracts\Arrayable;
+use Oraculum\Support\Contracts\Arrayable;
 use Oraculum\Support\Arr as ArraySupport;
 use Oraculum\Support\Primitives\PrimitiveObject;
 

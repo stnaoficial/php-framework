@@ -2,16 +2,14 @@
 
 namespace Oraculum\Http;
 
-use Oraculum\Contracts\Emptyable;
+use Oraculum\Support\Contracts\Emptyable;
 use Oraculum\Http\Contracts\Communicable;
 use Oraculum\Support\Primitives\PrimitiveObject;
 
 class Response extends PrimitiveObject implements Emptyable, Communicable
 {
     /**
-     * The content of the response.
-     * 
-     * @return Content
+     * @var Content $content The content of the response.
      */
     private $content;
 
@@ -29,7 +27,7 @@ class Response extends PrimitiveObject implements Emptyable, Communicable
         }
 
         if (is_string($content)) {
-            $content = new Content(data: $content);
+            $content = new Content(Header::empty(), $content);
         }
 
         $this->content = $content;

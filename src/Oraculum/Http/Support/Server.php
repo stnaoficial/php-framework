@@ -9,7 +9,19 @@ final class Server
 {
     use NonInstantiable;
 
-    public const HTTP_SERVER_PROTOCOL = 'HTTP/1.1';
+    private const PROTOCOL_REVISION = 'HTTP/1.1';
+
+    /**
+     * Retrieves the current HTTP server version.
+     * 
+     * @return string The current HTTP server version.
+     */
+    public static function version()
+    {
+        // Gets the HTTP version.
+        // e.g. HTTP/1.1
+        return $_SERVER['SERVER_PROTOCOL'] ?? self::PROTOCOL_REVISION;
+    }
 
     /**
      * Retrieves the current server protocol.
@@ -18,7 +30,33 @@ final class Server
      */
     public static function protocol()
     {
-        return $_SERVER['SERVER_PROTOCOL'] ?? self::HTTP_SERVER_PROTOCOL;
+        $protocol = 'http';
+
+        if (isset($_SERVER["HTTPS"]) && strtoupper($_SERVER["HTTPS"]) == "ON") {
+            $protocol = "https";
+        }
+
+        return $protocol;
+    }
+
+    /**
+     * Retrieves the current HTTP server host.
+     * 
+     * @return string The current HTTP server host.
+     */
+    public static function host()
+    {
+        return $_SERVER["SERVER_NAME"] ?? 'localhost';
+    }
+
+    /**
+     * Retrieves the current HTTP server port.
+     * 
+     * @return string The current HTTP server port.
+     */
+    public static function port()
+    {
+        return $_SERVER["SERVER_PORT"] ?? '80';
     }
 
     /**
@@ -30,18 +68,14 @@ final class Server
      */
     public static function baseUrl($uri = null)
     {
-        $protocol = 'http';
+        $protocol = self::protocol();
 
-        if (isset($_SERVER["HTTPS"]) && strtoupper($_SERVER["HTTPS"]) == "ON") {
-            $protocol = "https";
-        }
+        $host = self::host();
 
-        $name = $_SERVER["SERVER_NAME"] ?? 'localhost';
+        $baseUrl = $protocol . '://' . $host;
 
-        $baseUrl = $protocol . '://' . $name;
-
-        if (isset($_SERVER["SERVER_PORT"]) && $_SERVER["SERVER_PORT"] != "80") {
-            $baseUrl =  $protocol . '://' . $name . ':' . $_SERVER["SERVER_PORT"];
+        if ('80' !== $port = self::port()) {
+            $baseUrl =  $protocol . '://' . $host . ':' . $port;
         }
 
         if (!is_null($uri)) {

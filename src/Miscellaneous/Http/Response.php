@@ -2,7 +2,7 @@
 
 namespace Miscellaneous\Http;
 
-use Miscellaneous\Contracts\FromAny;
+use Miscellaneous\Support\Contracts\FromAny;
 use Oraculum\Http\Response as BaseResponse;
 
 final class Response extends BaseResponse implements FromAny

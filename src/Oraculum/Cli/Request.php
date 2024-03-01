@@ -3,29 +3,23 @@
 namespace Oraculum\Cli;
 
 use Oraculum\Cli\Support\Request as RequestSupport;
-use Oraculum\Contracts\FromCapture;
+use Oraculum\Support\Contracts\FromCapture;
 use Oraculum\Support\Primitives\PrimitiveObject;
 
 final class Request extends PrimitiveObject implements FromCapture
 {
     /**
-     * The command to execute.
-     * 
-     * @var string|null
+     * @var string|null $command The command to execute.
      */
     private $command;
 
     /**
-     * The options to pass to the command.
-     * 
-     * @var array
+     * @var array $options The options to pass to the command.
      */
     private $options;
 
     /**
-     * The flags to pass to the command.
-     * 
-     * @var array
+     * @var array $flags The flags to pass to the command.
      */
     private $flags;
 
@@ -62,7 +56,7 @@ final class Request extends PrimitiveObject implements FromCapture
     /**
      * Returns if the request has a command.
      * 
-     * @return bool
+     * @return bool Returns `true` if the request has a command and `false` otherwise.
      */
     public function hasCommand()
     {
@@ -72,7 +66,7 @@ final class Request extends PrimitiveObject implements FromCapture
     /**
      * Returns the command to execute.
      * 
-     * @return string|null
+     * @return string|null Returns the request command.
      */
     public function getCommand()
     {
@@ -82,7 +76,7 @@ final class Request extends PrimitiveObject implements FromCapture
     /**
      * Checks if the request has options.
      * 
-     * @return bool
+     * @return bool Returns `true` if the request has options and `false` otherwise.
      */
     public function hasOptions()
     {
@@ -94,7 +88,7 @@ final class Request extends PrimitiveObject implements FromCapture
      * 
      * @param string $name The name of the option.
      * 
-     * @return bool
+     * @return bool Returns `true` if the option exists and `false` otherwise.
      */
     public function hasOption($name)
     {
@@ -104,19 +98,62 @@ final class Request extends PrimitiveObject implements FromCapture
     /**
      * Returns the option to pass to the command.
      * 
+     * @template TValue of string
+     * 
      * @param string $name The name of the option.
      * 
-     * @return mixed
+     * @return TValue|null Returns the option value if it exists and `null` otherwise.
      */
     public function getOption($name)
     {
-        return $this->options[$name];
+        return $this->options[$name] ?? null;
+    }
+
+    /**
+     * Asks for an option to pass to the command.
+     * 
+     * @template TValue of string
+     * 
+     * @param string  $name     The name of the option.
+     * @param Console $console  The console instance.
+     * @param string  $question The question to ask.
+     * @param TValue  $default  The default answer.
+     * @param bool    $strict   If the input needs to be strictly converted to its respective type.
+     * 
+     * @return TValue Returns the option value or the answer value.
+     */
+    public function askOption($name, $console, $question = null, $default = null, $strict = false)
+    {
+        if (!$this->hasOption($name)) {
+            $this->options[$name] = $console->ask($question, $default, $strict);
+        }
+
+        return $this->getOption($name);
+    }
+
+    /**
+     * Gets the default value of an option until it is set.
+     * 
+     * @template TValue of string
+     * 
+     * @param string $name    The name of the option.
+     * @param TValue $default The default value.
+     * 
+     * @return TValue|null Returns the option value or the default value.
+     */
+    public function untilOption($name, $default = null)
+    {
+        if (!$this->hasOption($name)) {
+            $this->options[$name] = $default;
+        }
+
+        return $this->getOption($name);
     }
 
     /**
      * Returns the options to pass to the command.
      * 
-     * @return array
+     * @return array Returns the request options.
      */
     public function getOptions()
     {
@@ -126,7 +163,7 @@ final class Request extends PrimitiveObject implements FromCapture
     /**
      * Checks if the request has flags.
      * 
-     * @return bool
+     * @return bool Returns `true` if the request has flags and `false` otherwise.
      */
     public function hasFlags()
     {
@@ -134,24 +171,24 @@ final class Request extends PrimitiveObject implements FromCapture
     }
 
     /**
-     * Checks if the request has a flag.
-     * 
-     * @param string $name The name of the flag.
-     * 
-     * @return bool
-     */
-    public function hasFlag($name)
-    {
-        return in_array($name, $this->flags);
-    }
-
-    /**
      * Returns the flags to pass to the command.
      * 
-     * @return array
+     * @return array Returns the request flags.
      */
     public function getFlags()
     {
         return $this->flags;
+    }
+
+    /**
+     * Checks if the request has a flag.
+     * 
+     * @param string $name The name of the flag.
+     * 
+     * @return bool Returns `true` if the flag exists and `false` otherwise.
+     */
+    public function hasFlag($name)
+    {
+        return in_array($name, $this->flags);
     }
 }

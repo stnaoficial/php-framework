@@ -7,7 +7,7 @@ final class Io
     /**
      * Strictly converts the given value to the expected type.
      * 
-     * @param mixed $value The value to be converted.
+     * @param string $value The value to be converted.
      * 
      * @return mixed The converted value.
      */

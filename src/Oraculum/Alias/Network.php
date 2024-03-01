@@ -3,10 +3,11 @@
 namespace Oraculum\Alias;
 
 use InvalidArgumentException;
+use Oraculum\Support\Contracts\FromArray;
 use Oraculum\Support\Primitives\PrimitiveObject;
 use Oraculum\Support\Traits\GloballyAvailable;
 
-class Network extends PrimitiveObject
+class Network extends PrimitiveObject implements FromArray
 {
     use GloballyAvailable;
 
@@ -27,6 +28,18 @@ class Network extends PrimitiveObject
     public function __construct($aliases = [])
     {
         $this->load($aliases);
+    }
+
+    /**
+     * Creates a new instance from an array.
+     * 
+     * @param array $array The array to create the instance.
+     * 
+     * @return self The new instance.
+     */
+    public static function fromArray($array)
+    {
+        return new self($array);
     }
 
     /**

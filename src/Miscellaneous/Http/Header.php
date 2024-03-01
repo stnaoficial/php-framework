@@ -2,7 +2,7 @@
 
 namespace Miscellaneous\Http;
 
-use Miscellaneous\Contracts\FromAny;
+use Miscellaneous\Support\Contracts\FromAny;
 use Oraculum\FileSystem\Contracts\FromFile;
 use Oraculum\FileSystem\File;
 use Oraculum\Http\Header as BaseHeader;

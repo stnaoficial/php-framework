@@ -3,7 +3,7 @@
 namespace Oraculum\Cli\Components;
 
 use Oraculum\Cli\Support\Ansi as AnsiSupport;
-use Oraculum\Contracts\Stringable;
+use Oraculum\Support\Contracts\Stringable;
 use Oraculum\Support\Primitives\PrimitiveObject;
 use UnexpectedValueException;
 

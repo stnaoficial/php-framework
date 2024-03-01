@@ -4,8 +4,8 @@ namespace Oraculum\Map;
 
 use ArrayAccess;
 use Iterator;
-use Oraculum\Contracts\Arrayable;
-use Oraculum\Contracts\Emptyable;
+use Oraculum\Support\Contracts\Arrayable;
+use Oraculum\Support\Contracts\Emptyable;
 use Oraculum\Support\Arr as ArraySupport;
 use Oraculum\Support\Primitives\PrimitiveObject;
 

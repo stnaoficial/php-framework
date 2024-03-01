@@ -3,7 +3,7 @@
 namespace Oraculum\Cli\Components;
 
 use Oraculum\Cli\Support\Ansi as AnsiSupport;
-use Oraculum\Contracts\Stringable;
+use Oraculum\Support\Contracts\Stringable;
 use Oraculum\Support\Primitives\PrimitiveObject;
 
 final class Panel extends PrimitiveObject implements Stringable
@@ -119,13 +119,25 @@ final class Panel extends PrimitiveObject implements Stringable
      * Appends a line to the message.
      * 
      * @param string $line  The line to append.
-     * @param int    $break The number of new lines to break.
+     * @param int    $break The number of lines to break.
      * 
      * @return void
      */
-    public function line($line = '', $break = 0)
+    public function line($line = '', $break = 1)
     {
         $this->message .= $line . str_repeat(PHP_EOL, $break);
+    }
+
+    /**
+     * Loads a message into the panel.
+     * 
+     * @param string $message The message to load.
+     * 
+     * @return void
+     */
+    public function load($message)
+    {
+        $this->message = trim($message);
     }
 
     /**

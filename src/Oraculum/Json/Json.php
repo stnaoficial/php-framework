@@ -2,29 +2,30 @@
 
 namespace Oraculum\Json;
 
-use Oraculum\Contracts\Arrayable;
-use Oraculum\Contracts\FromArray;
-use Oraculum\Contracts\Stringable;
+use Oraculum\Support\Contracts\Arrayable;
+use Oraculum\Support\Contracts\FromArray;
+use Oraculum\Support\Contracts\Stringable;
 use Oraculum\Http\Exceptions\InvalidJsonException;
+use Oraculum\Json\Support\Json as JsonSupport;
 use Oraculum\Support\Primitives\PrimitiveObject;
 
 final class Json extends PrimitiveObject implements FromArray, Arrayable, Stringable
 {
     /**
-     * @var string The source of the JSON.
+     * @var string $json The JSON.
      */
-    private $source;
+    private $json;
 
     /**
      * Creates a new instance of the class.
      * 
-     * @param string $source The source of the JSON.
+     * @param string $json The JSON.
      * 
      * @return void
      */
-    public function __construct($source = "{}")
+    public function __construct($json = '{}')
     {
-        $this->source = $source;
+        $this->json = $json;
     }
 
     /**
@@ -38,15 +39,15 @@ final class Json extends PrimitiveObject implements FromArray, Arrayable, String
      */
     public static function fromArray($array)
     {
-        $source = json_encode($array, JSON_PRETTY_PRINT);
+        $json = @json_encode($array, JSON_PRETTY_PRINT);
 
-        if (!is_string($source) || json_last_error() !== JSON_ERROR_NONE) {
+        if (!is_string($json) || @json_last_error() !== JSON_ERROR_NONE) {
             throw new InvalidJsonException(
                 "Unable to encode array to JSON.",
             );
         }
 
-        return new self($source);
+        return new self($json);
     }
 
     /**
@@ -56,7 +57,7 @@ final class Json extends PrimitiveObject implements FromArray, Arrayable, String
      */
     public function toArray()
     {
-        return (array) json_decode($this->source, true);
+        return (array) @json_decode($this->json, true);
     }
 
     /**
@@ -66,7 +67,7 @@ final class Json extends PrimitiveObject implements FromArray, Arrayable, String
 	 */
 	public function __toString(): string
     {
-        return $this->source;
+        return (string) @json_encode(@json_decode($this->json), JSON_PRETTY_PRINT);
     }
 
     /**
@@ -82,19 +83,21 @@ final class Json extends PrimitiveObject implements FromArray, Arrayable, String
     /**
      * Gets the byte size of the JSON.
      * 
+     * @param string $encoding The encoding to use.
+     * 
      * @return int Returns the byte size of the JSON.
      */
-    public function getByteSize()
+    public function getByteSize($encoding = '8bit')
     {
-        $source = json_encode($this, JSON_NUMERIC_CHECK);
+        $json = @json_encode($this, JSON_NUMERIC_CHECK);
 
-        if (!is_string($source) || json_last_error() !== JSON_ERROR_NONE) {
+        if (!is_string($json) || @json_last_error() !== JSON_ERROR_NONE) {
             throw new InvalidJsonException(
                 "Unable to numerically encode JSON to get the size.",
             );
         }
 
-        return mb_strlen($source, '8bit');
+        return mb_strlen($json, $encoding);
     }
 
     /**
@@ -104,6 +107,18 @@ final class Json extends PrimitiveObject implements FromArray, Arrayable, String
      */
     public function getSize()
     {
-        return strlen($this->source);
+        return strlen($this->json);
+    }
+
+    /**
+     * Checks if the JSON is valid.
+     * 
+     * @param int $depth The depth to check.
+     * 
+     * @return bool Returns `true` if the JSON is valid, otherwise `false`.
+     */
+    public function isValid($depth = 512)
+    {
+        return JsonSupport::validate($this->json, $depth);
     }
 }

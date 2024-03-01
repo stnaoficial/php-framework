@@ -285,10 +285,14 @@ final class Container extends PrimitiveObject
      */
     public function call($callback, $dependencies = [])
     {
+        if (is_string($callback) && class_exists($callback)) {
+            return $this->resolve($callback, $dependencies);
+        }
+
         $callback = BoundMethod::closure($this, $callback);
 
         $reflection = new ReflectionFunction($callback);
-        
+
         $resolvedDependencies = $this->resolveDependencies($reflection->getParameters(), $dependencies);
 
         return $reflection->invokeArgs(array_values($resolvedDependencies));

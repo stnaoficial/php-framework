@@ -41,18 +41,18 @@ class Subject extends PrimitiveObject
     }
 
 	/**
-	 * Notify an observer.
-     * 
 	 * Notifies all attached observers.
      * 
-     * @param string $action The action to notify.
+     * @template TData
+     * 
+     * @param TData $data The data to notify.
 	 * 
      * @return void
 	 */
-	final public function notify($action): void
+	final public function notify($data): void
     {
         foreach ($this->observers as $observer) {
-            $observer instanceof Observer? $observer->observe($this, $action) : $observer($this, $action);
+            $observer instanceof Observer? $observer->observe($this, $data) : $observer($this, $data);
         }
     }
 }

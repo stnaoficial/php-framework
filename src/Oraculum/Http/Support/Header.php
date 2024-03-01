@@ -19,7 +19,13 @@ final class Header
 
         foreach (headers_list() as $header) {
             list($name, $value) = explode(': ', $header);
-            $headers[trim($name)] = trim($value);
+
+            if (isset($name, $value)) {
+                $headers[trim($name)] = trim($value);
+
+            } else {
+                $headers[] = trim($header);
+            }
         }
 
         return $headers;

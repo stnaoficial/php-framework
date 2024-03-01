@@ -2,7 +2,7 @@
 
 namespace Oraculum\FileSystem\Abstracts;
 
-use Oraculum\Contracts\Stringable;
+use Oraculum\Support\Contracts\Stringable;
 use Oraculum\Support\Primitives\PrimitiveObject;
 
 /**

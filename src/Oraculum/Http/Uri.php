@@ -2,26 +2,26 @@
 
 namespace Oraculum\Http;
 
-use Oraculum\Contracts\Stringable;
+use Oraculum\Support\Contracts\Stringable;
 use Oraculum\Support\Primitives\PrimitiveObject;
 
 class Uri extends PrimitiveObject implements Stringable
 {
     /**
-     * @var string The URI.
+     * @var string $uri The URI.
      */
-    protected $value;
+    protected $uri;
 
     /**
      * Creates a new instance of the class.
      * 
-     * @param string $value The URI value.
+     * @param string $uri The URI.
      * 
      * @return void
      */
-    public function __construct($value)
+    public function __construct($uri)
     {
-        $this->value = $value;
+        $this->uri = $uri;
     }
 
     /**
@@ -31,7 +31,7 @@ class Uri extends PrimitiveObject implements Stringable
      */
     public function getSegments()
     {
-        return explode('/', trim($this->value, '/'));
+        return explode('/', trim($this->uri, '/'));
     }
 
     /**
@@ -41,7 +41,7 @@ class Uri extends PrimitiveObject implements Stringable
 	 */
 	public function __toString(): string
     {
-        return $this->value;
+        return $this->uri;
     }
 
     /**

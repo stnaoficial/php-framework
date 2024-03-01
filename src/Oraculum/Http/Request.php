@@ -2,7 +2,7 @@
 
 namespace Oraculum\Http;
 
-use Oraculum\Contracts\FromCapture;
+use Oraculum\Support\Contracts\FromCapture;
 use Oraculum\Http\Contracts\Communicable;
 use Oraculum\Http\Support\Request as RequestSupport;
 use Oraculum\Support\Primitives\PrimitiveObject;
@@ -13,27 +13,27 @@ use Oraculum\Support\Primitives\PrimitiveObject;
 final class Request extends PrimitiveObject implements FromCapture, Communicable
 {
     /**
-     * @var string The request method.
+     * @var string $method The request method.
      */
     private $method;
 
     /**
-     * @var Uri The request uri.
+     * @var Uri $uri The request uri.
      */
     private $uri;
 
     /**
-     * @var array The request parameters.
+     * @var array $params The request parameters.
      */
     private $params;
 
     /**
-     * @var array The request cookies.
+     * @var array $cookies The request cookies.
      */
     private $cookies;
 
     /**
-     * @var string The request body.
+     * @var string $body The request body.
      */
     private $body;
 

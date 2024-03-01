@@ -7,7 +7,7 @@ use Oraculum\Support\Primitives\PrimitiveObject;
 final class Fallback extends PrimitiveObject
 {
     /**
-     * @var Closure|string The route handler.
+     * @var Closure|string $handler The route handler.
      */
     private $handler;
 

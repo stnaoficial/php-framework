@@ -35,7 +35,7 @@ final class NamespaceAlias
     {
         $parts = explode('.', $alias);
 
-        $alias = "";
+        $alias = '';
 
         foreach ($parts as $part) {
             if (!$words = explode('_', $part)) {

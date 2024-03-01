@@ -2,7 +2,7 @@
 
 namespace Oraculum\Html\Abstracts;
 
-use Oraculum\Contracts\Stringable;
+use Oraculum\Support\Contracts\Stringable;
 use Oraculum\Html\Contracts\Htmlable;
 use Oraculum\Support\Arr as ArraySupport;
 use Oraculum\Support\Primitives\PrimitiveObject;

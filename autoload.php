@@ -1,25 +1,25 @@
 <?php declare(strict_types=1);
 
 $dependencies = [
-    __DIR__ . '/src/Oraculum/Support/Primitives/PrimitiveObject.php',
+    __SOURCE_DIR__ . "/Oraculum/Support/Primitives/PrimitiveObject.php",
 
-    __DIR__ . '/src/Oraculum/Contracts/Stringable.php',
-    __DIR__ . '/src/Oraculum/Contracts/FromArray.php',
-    __DIR__ . '/src/Oraculum/Contracts/Arrayable.php',
+    __SOURCE_DIR__ . "/Oraculum/Support/Contracts/Stringable.php",
+    __SOURCE_DIR__ . "/Oraculum/Support/Contracts/FromArray.php",
+    __SOURCE_DIR__ . "/Oraculum/Support/Contracts/Arrayable.php",
 
-    __DIR__ . '/src/Oraculum/Support/Attributes/Override.php',
-    __DIR__ . '/src/Oraculum/Support/Traits/GloballyAvailable.php',
-    __DIR__ . '/src/Oraculum/Support/Traits/NonInstantiable.php',
-    __DIR__ . '/src/Oraculum/Support/Path.php',
+    __SOURCE_DIR__ . "/Oraculum/Support/Attributes/Override.php",
+    __SOURCE_DIR__ . "/Oraculum/Support/Traits/GloballyAvailable.php",
+    __SOURCE_DIR__ . "/Oraculum/Support/Traits/NonInstantiable.php",
+    __SOURCE_DIR__ . "/Oraculum/Support/Path.php",
 
-    __DIR__ . '/src/Oraculum/Json/Json.php',
+    __SOURCE_DIR__ . "/Oraculum/Json/Json.php",
 
-    __DIR__ . '/src/Oraculum/FileSystem/Abstracts/File.php',
-    __DIR__ . '/src/Oraculum/FileSystem/File.php',
-    __DIR__ . '/src/Oraculum/FileSystem/ReadonlyFile.php',
-    __DIR__ . '/src/Oraculum/FileSystem/CacheFile.php',
+    __SOURCE_DIR__ . "/Oraculum/FileSystem/Abstracts/File.php",
+    __SOURCE_DIR__ . "/Oraculum/FileSystem/File.php",
+    __SOURCE_DIR__ . "/Oraculum/FileSystem/ReadonlyFile.php",
+    __SOURCE_DIR__ . "/Oraculum/FileSystem/CacheFile.php",
 
-    __DIR__ . '/src/Oraculum/Autoloader/Autoloader.php'
+    __SOURCE_DIR__ . "/Miscellaneous/Autoloader/Autoloader.php"
 ];
 
 // Automatically require all dependencies.
@@ -28,8 +28,10 @@ foreach ($dependencies as $dependency) {
     require_once $dependency;
 }
 
-$autoloder = new \Oraculum\Autoloader\Autoloader(
-    \Oraculum\Support\Path::basePath('autoload.json')
+// Creates a new instance of the autoloader based in a autoload.json file located
+// in the root directory of the project.
+$autoloder = new \Miscellaneous\Autoloader\Autoloader(
+    \Oraculum\Support\Path::basePath("autoload.json")
 );
 
 // Mark all dependencies to be ignored by the autoloader.
@@ -37,7 +39,8 @@ foreach ($dependencies as $dependency) {
     $autoloder->ignore($dependency);
 }
 
+// Start autoloading dependencies.
 $autoloder->autoload();
 
-// Sets the instance as global.
-\Oraculum\Autoloader\Autoloader::setInstance($autoloder);
+// Changes the global autoloader instance to the new one.
+\Miscellaneous\Autoloader\Autoloader::setInstance($autoloder);
