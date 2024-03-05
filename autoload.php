@@ -8,14 +8,17 @@ $dependencies = [
     __SOURCE_DIR__ . "/Oraculum/Support/Contracts/Arrayable.php",
 
     __SOURCE_DIR__ . "/Oraculum/Support/Attributes/Override.php",
+
     __SOURCE_DIR__ . "/Oraculum/Support/Traits/GloballyAvailable.php",
     __SOURCE_DIR__ . "/Oraculum/Support/Traits/NonInstantiable.php",
+
     __SOURCE_DIR__ . "/Oraculum/Support/Path.php",
 
     __SOURCE_DIR__ . "/Oraculum/Json/Json.php",
 
     __SOURCE_DIR__ . "/Oraculum/FileSystem/Abstracts/File.php",
     __SOURCE_DIR__ . "/Oraculum/FileSystem/File.php",
+    __SOURCE_DIR__ . "/Oraculum/FileSystem/LocalFile.php",
     __SOURCE_DIR__ . "/Oraculum/FileSystem/ReadonlyFile.php",
     __SOURCE_DIR__ . "/Oraculum/FileSystem/CacheFile.php",
 
@@ -31,7 +34,7 @@ foreach ($dependencies as $dependency) {
 // Creates a new instance of the autoloader based in a autoload.json file located
 // in the root directory of the project.
 $autoloder = new \Miscellaneous\Autoloader\Autoloader(
-    \Oraculum\Support\Path::basePath("autoload.json")
+    \Oraculum\FileSystem\LocalFile::new('autoload.json')->getFilename()
 );
 
 // Mark all dependencies to be ignored by the autoloader.

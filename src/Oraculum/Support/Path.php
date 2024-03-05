@@ -56,4 +56,35 @@ final class Path
 
         return $fullpath;
     }
+
+    /**
+     * Get the relative path of the given path.
+     * 
+     * @param string $targetPath The path to get the relative path from.
+     * 
+     * @return string The relative path.
+     */
+    public static function relative($targetPath)
+    {
+        $basePath = self::basePath();
+
+        // Split the paths into segments.
+        $basePathSegments = explode(DIRECTORY_SEPARATOR, rtrim($basePath, DIRECTORY_SEPARATOR));
+        $targetPathSegments = explode(DIRECTORY_SEPARATOR, rtrim($targetPath, DIRECTORY_SEPARATOR));
+
+        // Find the common segments and calculate the difference.
+        $common     = count(array_intersect_assoc($basePathSegments, $targetPathSegments));
+        $difference = count($basePathSegments) - $common;
+
+        // Calculate the relative path.
+        $relativePath = DIRECTORY_SEPARATOR . implode(DIRECTORY_SEPARATOR, array_fill(0, $difference, '..'));
+
+        if (!empty($relativePath)) {
+            $relativePath .= DIRECTORY_SEPARATOR;
+        }
+
+        $relativePath .= implode(DIRECTORY_SEPARATOR, array_slice($targetPathSegments, $common));
+
+        return $relativePath;
+    }
 }

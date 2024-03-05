@@ -47,7 +47,9 @@ final class HelpCommand extends PrimitiveObject implements CommandHandler
             ));
 
             // Write the description of the command if available.
-            $this->console->writeLine($command->getDescription());
+            $this->console->writeLine(
+                $command->hasDescription()? $command->getDescription() : '-'
+            );
         }
 
         $this->console->writeLine(sprintf("%' 30s ", '...'));

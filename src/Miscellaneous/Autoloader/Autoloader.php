@@ -20,34 +20,28 @@ final class Autoloader extends PrimitiveObject
     use GloballyAvailable;
 
     /**
-     * @var File The actual entry file to autoload.
+     * @var File $file The actual file to autoload.
      */
     private $file;
 
     /**
-     * @var string The PHP version of the module.
+     * @var array $resolve The options resolved by the autoloader.
      */
-    private $version = PHP_VERSION;
+    private $resolve = [
+        'php'   => PHP_VERSION,
+        'files' => [],
+        'psr-4' => []
+    ];
 
     /**
-     * @var array<string> The required files.
-     */
-    private $requiredFiles = [];
-
-    /**
-     * @var array<string, string> The namespace resolutions.
-     */
-    private $namespaceResolutions = [];
-
-    /**
-     * @var array<string> All autoloaded dependencies.
-     */
-    private $dependencies = [];
-
-    /**
-     * @var bool Whether the module has been resolved.
+     * @var bool $resolved Whether the module has been resolved.
      */
     private $resolved = false;
+
+    /**
+     * @var array<string> $dependencies All autoloaded dependencies.
+     */
+    private $dependencies = [];
 
     /**
      * Creates a new instance of the class.
@@ -87,34 +81,6 @@ final class Autoloader extends PrimitiveObject
     }
 
     /**
-     * Sets the computed options.
-     *
-     * @param array $options The computed options to set.
-     *
-     * @return void
-     */
-    private function setComputedOptions($options)
-    {
-        $this->version              = $options['version'];
-        $this->requiredFiles        = $options['require'];
-        $this->namespaceResolutions = $options['resolve'];
-    }
-
-    /**
-     * Gets the computed options.
-     *
-     * @return array{require: array<string>, resolve: array<string, string>} The computed options.
-     */
-    private function getComputedOptions()
-    {
-        return [
-            'version' => $this->version,
-            'require' => $this->requiredFiles,
-            'resolve' => $this->namespaceResolutions
-        ];
-    }
-
-    /**
      * Binds options to the autoloader.
      *
      * @param array $options The options to bind.
@@ -125,29 +91,29 @@ final class Autoloader extends PrimitiveObject
      */
     private function bindOptions($options)
     {
-        if (!isset($options['version'])) {
+        if (!isset($options['php'])) {
             throw new UnexpectedValueException(sprintf(
                 "The autoloader requires a version option to be set."
             ));
         }
 
-        if (version_compare(PHP_VERSION, $options['version'], '<')) {
+        if (version_compare(PHP_VERSION, $options['php'], '<')) {
             throw new UnexpectedValueException(sprintf(
-                'The autoloader requires PHP version %s or higher. Getting %s.', $options['version'], PHP_VERSION
+                'The autoloader requires PHP version %s or higher. Getting %s.', $options['php'], PHP_VERSION
             ));
         }
 
-        $this->version = $options['version'];
+        $this->resolve['php'] = $options['php'];
 
-        if (isset($options['require'])) {
-            foreach ($options['require'] as $filename) {
-                $this->requiredFiles[] = PathSupport::join($this->file->getDirectory(), $filename);
+        if (isset($options['files'])) {
+            foreach ($options['files'] as $filename) {
+                $this->resolve['files'][] = PathSupport::join($this->file->getDirectory(), $filename);
             }
         }
 
-        if (isset($options['resolve'])) {
-            foreach ($options['resolve'] as $namespace => $path) {
-                $this->namespaceResolutions[$namespace] = PathSupport::join($this->file->getDirectory(), $path);
+        if (isset($options['psr-4'])) {
+            foreach ($options['psr-4'] as $namespace => $path) {
+                $this->resolve['psr-4'][$namespace] = PathSupport::join($this->file->getDirectory(), $path);
             }
         }
     }
@@ -163,7 +129,7 @@ final class Autoloader extends PrimitiveObject
      * @return void
      */
     private function bindOptionsRecursively($filename)
-    {
+    {   
         // We are using the parent directory as the root directory for the
         // currently binding file.
         $filename = PathSupport::join($this->file->getDirectory(), $filename);
@@ -188,12 +154,14 @@ final class Autoloader extends PrimitiveObject
             ));
         }
 
+        // Bind the options from the autoload file.
         $this->bindOptions($options = Json::new($contents)->toArray());
 
         if (!isset($options['extends'])) {
             return;
         }
 
+        // Extends a parent autoload file options recursively.
         $this->bindOptionsRecursively($options['extends']);
     }
 
@@ -213,100 +181,9 @@ final class Autoloader extends PrimitiveObject
     }
 
     /**
-     * Requires a dependency to the autoloader.
-     * 
-     * @param string $filename The filename to require.
-     * 
-     * @return void
-     */
-    public function require($filename)
-    {
-        if (isset($this->dependencies[$filename])) {
-            return;
-        }
-
-        require_once $this->dependencies[$filename] = $filename;
-    }
-
-    /**
-     * Require file dependencies.
-     *
-     * @return void
-     */
-    private function requireFiles()
-    {
-        foreach ($this->requiredFiles as $filename) {
-            $this->require($filename);
-        }
-    }
-
-    /**
-     * Automatically loads classes.
-     *
-     * @param string $class The name of the class.
-     *
-     * @return bool Returns true on success or false on failure.
-     */
-    private function autoloader($class)
-    {
-        // Check if the class name starts with the current namespace.
-        // If so, replace it with the full path to the file.
-        // e.g. App\Example\Class -> /app/Example/Class
-        foreach ($this->namespaceResolutions as $namespace => $path) {
-            if (str_starts_with($class, $namespace)) {
-                $class = str_replace($namespace, $path . DIRECTORY_SEPARATOR, $class);
-                break;
-            }
-        }
-
-        // Replaces the namespace separator with a directory separator in the
-        // fully-qualified class name.
-        // e.g. App\Example\Class -> App/Example/Class
-        // Also adds the PHP file extension.
-        $filename = str_replace(NAMESPACE_SEPARATOR, DIRECTORY_SEPARATOR, $class) . PHP_FILE_EXTENSION;
-
-        // Return false if the file does not exist.
-        // This helps to avoid fatal errors when the class is not found.
-        if (!file_exists($filename)) {
-            return false;
-        }
-        
-        $this->require($filename);
-        
-        return true;
-    }
-
-    /**
-     * Register the autoloader.
-     *
-     * @return void
-     */
-    private function registerAutoloader()
-    {
-        spl_autoload_register([$this, 'autoloader']);
-    }
-
-    /**
-     * Resolve dependencies.
-     *
-     * @return void
-     */
-    private function resolve()
-    {
-        if ($this->resolved) {
-            return;
-        }
-
-        $this->requireFiles();
-        $this->registerAutoloader();
-
-        $this->resolved = true;
-    }
-
-    /**
      * Ignores a dependency.
      *
-     * @param string $filename The filename to ignore.
+     * @param string $filename The filename of the dependency to ignore.
      *
      * @return void
      */
@@ -316,31 +193,124 @@ final class Autoloader extends PrimitiveObject
     }
 
     /**
+     * Loads the given dependency.
+     * 
+     * @param string $filename The filename of the dependency to load.
+     * 
+     * @throws InvalidArgumentException If the file does not exist.
+     * 
+     * @return void
+     */
+    public function load($filename)
+    {
+        // Skips the file if it is already loaded.
+        // This prevent the autoloader from loading the same file multiple times.
+        if (isset($this->dependencies[$filename])) {
+            return;
+        }
+
+        // Throw an exception if the file does not exist.
+        if (!file_exists($filename)) {
+            throw new InvalidArgumentException(sprintf(
+                "File %s does not exist.", $filename
+            ));
+        }
+
+        // Loads the file and adds it to the list of loaded dependencies.
+        require_once $this->dependencies[$filename] = $filename;
+    }
+
+    /**
+     * Load all given dependencies.
+     * 
+     * @param array $filenames The filename of the dependencies to load.
+     * 
+     * @throws InvalidArgumentException If some file does not exist.
+     * 
+     * @return void
+     */
+    public function loadAll($filenames)
+    {
+        foreach ($filenames as $filename) {
+            $this->load($filename);
+        }
+    }
+
+    /**
+     * Automatically load classes.
+     *
+     * @param string $class The name of the class.
+     * 
+     * @throws InvalidArgumentException If the class cannot be autoloaded.
+     *
+     * @return void
+     */
+    private function autoloader($class)
+    {
+        // Applies the PSR-4 autoloading rules to the class.
+        // Check if the class name starts with the current namespace.
+        // If so, replace it with the full path to the file.
+        // e.g. App\Example\Class -> /app\Example\Class
+        foreach ($this->resolve['psr-4'] as $namespace => $path) {
+            if (str_starts_with($class, $namespace)) {
+                $class = str_replace($namespace, $path . DIRECTORY_SEPARATOR, $class);
+                break;
+            }
+        }
+
+        // Replaces the namespace separator with a directory separator in the 
+        // fully-qualified class name.
+        // e.g. /app\Example\Class -> /app/Example/Class.php
+        // It also adds the PHP file extension.
+        $filename = str_replace(NAMESPACE_SEPARATOR, DIRECTORY_SEPARATOR, $class) . PHP_FILE_EXTENSION;
+
+        $this->load($filename);
+    }
+
+    /**
+     * Resolve dependencies.
+     *
+     * @throws InvalidArgumentException If some file does not exist.
+     * 
+     * @return void
+     */
+    private function resolve()
+    {
+        if ($this->resolved) {
+            return;
+        }
+
+        foreach ($this->resolve['files'] as $filename) {
+            $this->load($filename);
+        }
+
+        spl_autoload_register([$this, 'autoloader']);
+
+        $this->resolved = true;
+    }
+
+    /**
      * Starts the autoloader.
+     * 
+     * @param bool $rebuild Whether to rebuild the autoload file.
      *
      * @throws InvalidArgumentException If some autoload file does match the requirements.
      * @throws UnexpectedValueException If the PHP version is not set or too old.
      * 
      * @return void
      */
-    public function autoload()
+    public function autoload($rebuild = false)
     {
         $cache = new CacheFile(self::class);
 
-        if (!$cache->exists()) {
+        if ($rebuild || !$cache->exists()) {
             $this->build();
         }
 
-        // Get the computed options from the cache memoization.
+        // Get the build options from the cache memoization.
         // It considers the already computed options from the cache if they exist,
-        // otherwise it computes the options again and stores them in the cache.
-        // We are also typing the options for a better usage.
-        /** @var array{require:array<string>, resolve:array<string, string>} */
-        $options = $cache->memorize(function() {
-            return $this->getComputedOptions();
-        });
-
-        $this->setComputedOptions($options);
+        // otherwise it build the options again and stores them in the cache.
+        $this->resolve = $cache->memorize($this->resolve);
 
         $this->resolve();
     }

@@ -2,8 +2,8 @@
 
 namespace Miscellaneous\Http\Services;
 
+use Miscellaneous\Autoloader\Autoloader;
 use Miscellaneous\Kernel\Abstracts\ServiceProvider;
-use Oraculum\FileSystem\File;
 
 final class Command extends ServiceProvider
 {
@@ -24,7 +24,14 @@ final class Command extends ServiceProvider
      */
     private function requireDependencies()
     {
-        File::new(__SOURCE_DIR__ . "/Miscellaneous/Http/resources/commands.php")->require(false);
+        $dependencies = [
+            __SOURCE_DIR__ . "/Miscellaneous/Http/resources/commands/serve.php",
+            __SOURCE_DIR__ . "/Miscellaneous/Http/resources/commands/broadcast.php",
+            __SOURCE_DIR__ . "/Miscellaneous/Http/resources/commands/route.php"
+        ];
+        
+        Autoloader::getInstance()
+                  ->loadAll($dependencies);
     }
 
     /**

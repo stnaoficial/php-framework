@@ -45,7 +45,7 @@ final class BroadcastCommand extends PrimitiveObject implements CommandHandler
     private function createServer()
     {
         $address = $this->request->untilOption("address", "0.0.0.0");
-        $port    = $this->request->untilOption("port", 0);
+        $port    = $this->request->untilOption("port", 8080);
 
         $server = new SocketServer($address, $port, SocketServer::REUSE);
 

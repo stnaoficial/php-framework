@@ -13,15 +13,15 @@ trait Macroable
     /**
      * The registered string macros.
      *
-     * @var array
+     * @var array<string, Closure|string>
      */
     protected static array $macros = [];
 
     /**
      * Register a custom macro.
      *
-     * @param string          $name  The name of the macro.
-     * @param object|callable $macro The macro implementation.
+     * @param string         $name  The name of the macro.
+     * @param Closure|string $macro The macro implementation.
      * 
      * @return void
      */

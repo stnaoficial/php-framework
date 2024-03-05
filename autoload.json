@@ -1,9 +1,8 @@
 {
-    "version": "8.3.1",
-    "require": [
+    "php": "8.3.1",
+    "files": [
         "/src/Miscellaneous/Http/helpers.php",
         "/src/Miscellaneous/Kernel/helpers.php",
-
         "/src/Oraculum/Alias/helpers.php",
         "/src/Oraculum/Container/helpers.php",
         "/src/Oraculum/Html/helpers.php",
@@ -12,7 +11,7 @@
         "/src/Oraculum/Wrapper/helpers.php",
         "/src/Oraculum/Support/helpers.php"
     ],
-    "resolve": {
+    "psr-4": {
         "Miscellaneous\\": "/src/Miscellaneous",
         "Oraculum\\": "/src/Oraculum"
     }

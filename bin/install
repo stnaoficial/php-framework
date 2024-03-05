@@ -1,0 +1,73 @@
+#!/usr/bin/env php
+<?php declare(strict_types=1);
+
+require_once __FRAMEWORK_DIR__ . "/env.php";
+
+$dependencies = [
+    __SOURCE_DIR__ . "/Oraculum/Support/Primitives/PrimitiveObject.php",
+
+    __SOURCE_DIR__ . "/Oraculum/Support/Contracts/Stringable.php",
+    __SOURCE_DIR__ . "/Oraculum/Support/Contracts/FromArray.php",
+    __SOURCE_DIR__ . "/Oraculum/Support/Contracts/Arrayable.php",
+
+    __SOURCE_DIR__ . "/Oraculum/Support/Traits/GloballyAvailable.php",
+    __SOURCE_DIR__ . "/Oraculum/Support/Traits/NonInstantiable.php",
+
+    __SOURCE_DIR__ . "/Oraculum/Support/Path.php",
+
+    __SOURCE_DIR__ . "/Oraculum/Cli/Support/Io.php",
+    __SOURCE_DIR__ . "/Oraculum/Cli/Command.php",
+    __SOURCE_DIR__ . "/Oraculum/Cli/Console.php",
+
+    __SOURCE_DIR__ . "/Oraculum/FileSystem/Abstracts/File.php",
+    __SOURCE_DIR__ . "/Oraculum/FileSystem/File.php",
+    __SOURCE_DIR__ . "/Oraculum/FileSystem/LocalFile.php",
+
+    __SOURCE_DIR__ . "/Oraculum/Json/Json.php"
+];
+
+// Automatically require all dependencies.
+foreach ($dependencies as $dependency) {
+    require_once $dependency;
+}
+
+$console = new \Oraculum\Cli\Console;
+
+// Asks the user if he wants to create the `index.php` file.
+// If yes, creates the `index.php` file.
+$indexFile = new \Oraculum\FileSystem\LocalFile("index.php");
+
+if (
+    !$indexFile->exists() &&
+    $console->ask("Create `index.php` file? (default: yes) ", "yes", true)
+) {
+    $indexFile->overwrite(sprintf(
+        "<?php declare(strict_types=1);\n\nrequire_once __DIR__ . \"%s\";\n\nkernel()->boot();",
+        \Oraculum\Support\Path::relative(__FRAMEWORK_DIR__ . "/index.php")
+    ));
+}
+
+// Asks the user if he wants to create the `console` file.
+// If yes, creates the `console` file.
+$consoleFile = new \Oraculum\FileSystem\LocalFile("console");
+
+if (
+    !$consoleFile->exists() &&
+    $console->ask("Create `console` file? (default: yes) ", "yes", true)
+) {
+    $consoleFile->overwrite("#!/usr/bin/env php\n<?php require_once __DIR__ . \"/index.php\";");
+}
+
+// Asks the user if he wants to create the `autoload.json` file.
+// If yes, creates the `autoload.json` file.
+$autoloadFile = new \Oraculum\FileSystem\LocalFile("autoload.json");
+
+if (
+    !$autoloadFile->exists() &&
+    $console->ask("Create `autoload.json` file? (default: yes) ", "yes", true)
+) {
+    $autoloadFile->overwrite(\Oraculum\Json\Json::fromArray([
+        "php"     => PHP_VERSION,
+        "extends" => \Oraculum\Support\Path::relative(__FRAMEWORK_DIR__ . "/autoload.json")
+    ]));
+}

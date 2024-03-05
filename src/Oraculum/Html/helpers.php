@@ -8,7 +8,7 @@ if (!function_exists('element')) {
      * @param array  $attributes The attributes of the element.
      * @param array  $children   The children of the element.
      * 
-     * @return void
+     * @return Oraculum\Html\Element Returns a new HTML element.
      */
     function element($name = 'div', $attributes = [], $children = [])
     {

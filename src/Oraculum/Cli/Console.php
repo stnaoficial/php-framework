@@ -57,12 +57,14 @@ final class Console extends PrimitiveObject
 
     /**
      * Ask a question.
+     * 
+     * @template TAnswer
      *
      * @param string|null $question The question to be asked.
      * @param string|null $default  The default answer.
      * @param bool        $strict   If the input needs to be strictly converted to its respective type.
      *
-     * @return string The answer to the question.
+     * @return ($strict is true? TAnswer : string) The answer to the question.
      */
     public function ask($question = null, $default = null, $strict = false)
     {
