@@ -73,18 +73,18 @@ final class Path
         $targetPathSegments = explode(DIRECTORY_SEPARATOR, rtrim($targetPath, DIRECTORY_SEPARATOR));
 
         // Find the common segments and calculate the difference.
-        $common     = count(array_intersect_assoc($basePathSegments, $targetPathSegments));
-        $difference = count($basePathSegments) - $common;
+        $commonSegments = count(array_intersect_assoc($basePathSegments, $targetPathSegments));
+        $diffSegments   = count($basePathSegments) - $commonSegments;
 
         // Calculate the relative path.
-        $relativePath = DIRECTORY_SEPARATOR . implode(DIRECTORY_SEPARATOR, array_fill(0, $difference, '..'));
+        $relativePath = implode(DIRECTORY_SEPARATOR, array_fill(0, $diffSegments, '..'));
 
         if (!empty($relativePath)) {
             $relativePath .= DIRECTORY_SEPARATOR;
         }
 
-        $relativePath .= implode(DIRECTORY_SEPARATOR, array_slice($targetPathSegments, $common));
+        $relativePath .= implode(DIRECTORY_SEPARATOR, array_slice($targetPathSegments, $commonSegments));
 
-        return $relativePath;
+        return DIRECTORY_SEPARATOR . $relativePath;
     }
 }
